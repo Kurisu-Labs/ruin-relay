@@ -1,0 +1,69 @@
+{
+  "description": "Ruin Relay V1 deterministic 7x7 fixture; tile 0 = start, 48 = exit; 1 bit means wall; direction encoding U=0,R=1,D=2,L=3 little-endian 2-bit chunks",
+  "boardSize": 7,
+  "startTile": 0,
+  "exitTile": 48,
+  "seedAscii": [
+    "S#.#...",
+    ".....#.",
+    ".####..",
+    "#.....#",
+    "##..#.#",
+    ".....#.",
+    "##....E"
+  ],
+  "initialWallsHex": "0xd053827900a",
+  "initialRevision": 0,
+  "editableIndices": [
+    8,
+    9,
+    10,
+    11,
+    14,
+    15,
+    16,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    29,
+    30,
+    31,
+    32,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40
+  ],
+  "editableMaskHex": "0x1f9e7e1cf00",
+  "maxMoves": 96,
+  "revisions": [
+    {
+      "revision": 0,
+      "path": "DRRRRURRDDLDLLDDRDRR",
+      "moveCount": 20,
+      "packedDirectionsHex": "0x59afba5156",
+      "toggleTileIndex": 31,
+      "beforeWallsHex": "0xd053827900a",
+      "afterWallsHex": "0xd05b827900a",
+      "afterStillSolvable": true,
+      "expectedNextRevision": 1
+    },
+    {
+      "revision": 1,
+      "path": "DRRRRURRDDLDLLLDDRRDRR",
+      "moveCount": 22,
+      "packedDirectionsHex": "0x596bfba5156",
+      "toggleTileIndex": 38,
+      "beforeWallsHex": "0xd05b827900a",
+      "afterWallsHex": "0xd45b827900a",
+      "afterStillSolvable": true,
+      "expectedNextRevision": 2
+    }
+  ],
+  "finalWallsHex": "0xd45b827900a"
+}

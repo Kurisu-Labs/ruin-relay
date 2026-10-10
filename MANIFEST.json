@@ -1,0 +1,203 @@
+{
+  "name": "Ruin Relay Hackathon Handoff",
+  "version": "1.0",
+  "generated": "2026-10-10",
+  "files": {
+    "ADR.md": {
+      "bytes": 45128,
+      "sha256": "d1ecc5d50937c494e563b300ab7d9a4b424f1949fce62f78bcd70c7252328c2b"
+    },
+    "ADR.pdf": {
+      "bytes": 141290,
+      "sha256": "fb86c38089038981022cfddb561e87a47fbc68443bd4180e2f40d4b35b4dab06"
+    },
+    "HANDOFF.md": {
+      "bytes": 2096,
+      "sha256": "7dc746ef0cc6239fe4377e585086dad00fd0fa0a764b879bf08fcdf9b687583c"
+    },
+    "IMPLEMENTATION_PLAN.md": {
+      "bytes": 4607,
+      "sha256": "d6af602fce9298da4271321cc166e6308ed2f6cf9ae6ddfe1be53cb29e45b1ec"
+    },
+    "PRD.md": {
+      "bytes": 43746,
+      "sha256": "7bb3b0a9619581119c6e28b1413b3f37fcdbd937b44235c8b8e56e854304796e"
+    },
+    "PRD.pdf": {
+      "bytes": 173539,
+      "sha256": "b0eea3ffbe220c4e4eefeeb857f65a76973e6846455187341e283964a1fcf1f2"
+    },
+    "TEST_PLAN.md": {
+      "bytes": 16219,
+      "sha256": "97382ad81b5ab30fd4cde87c24ef60fa91d77a8422a19568ec8bdcd5b1f62eb4"
+    },
+    "TEST_PLAN.pdf": {
+      "bytes": 99050,
+      "sha256": "1fff1fbe1d985b90a107d07acfbe1e7600f58fd245b55caa5f78d105a343eaea"
+    },
+    "adrs/ADR-001.md": {
+      "bytes": 896,
+      "sha256": "b319ef7527225fcb148844637f1f91b7589f6bc15d31b6512b6874d10f9f29f1"
+    },
+    "adrs/ADR-002.md": {
+      "bytes": 942,
+      "sha256": "8bb2a14a1356aa5906fdb3bbfad9383ee3b3e034bd8f475ccb34b21017afa23d"
+    },
+    "adrs/ADR-003.md": {
+      "bytes": 861,
+      "sha256": "ecfb454b5980f4a956bf6a2b2a2b632068e8d3468c81d578f0338c542ae14a68"
+    },
+    "adrs/ADR-004.md": {
+      "bytes": 779,
+      "sha256": "d2035223f889e407ca76bbbd037d798f1b568dd54cd4f4323a283c13a070f581"
+    },
+    "adrs/ADR-005.md": {
+      "bytes": 1025,
+      "sha256": "2994445724a436dcc4420242331d3c31d9be2c0db3c0a5d92c91ba40f48c1ed7"
+    },
+    "adrs/ADR-006.md": {
+      "bytes": 802,
+      "sha256": "0e515214258d79c8130fa52586d5cacf97e9c00516b2ea875db119fe832f1ddb"
+    },
+    "adrs/ADR-007.md": {
+      "bytes": 865,
+      "sha256": "da1eef40a4aa0f4816786a03d02d3a53212163ae8f287efa53665b6d4608a565"
+    },
+    "adrs/ADR-008.md": {
+      "bytes": 860,
+      "sha256": "2e6540c30102c456d4e087bb3854ff9ab0b0f49d573bd89b15cd1e894f18dd2f"
+    },
+    "adrs/ADR-009.md": {
+      "bytes": 886,
+      "sha256": "089b56e085d6dc769c19cc3c9cff285407467883968fb1b246f0aeaa60d1e8fa"
+    },
+    "adrs/ADR-010.md": {
+      "bytes": 1084,
+      "sha256": "6d34b3e40dc8e5d5535d9b50b78c8280ecd705793a50283ff7a0c838ea922e75"
+    },
+    "adrs/ADR-011.md": {
+      "bytes": 851,
+      "sha256": "069e9fb50988b483f52c61fc632a24c8baf835a9b2697f22499e69788aefd4ac"
+    },
+    "adrs/ADR-012.md": {
+      "bytes": 908,
+      "sha256": "b9cf7b9983e66f6e4a6bc4d10c6e6688cccad7d2fcb1735d637f2b7cbedf3e45"
+    },
+    "adrs/ADR-013.md": {
+      "bytes": 824,
+      "sha256": "7dae6121290e0f92a59b52ac050e1f6dcd3cf96f81a5acbfd114e9d0a4480cba"
+    },
+    "adrs/ADR-014.md": {
+      "bytes": 908,
+      "sha256": "acbb28c39ff4f0c964be5e774777491682513a81f4bdf3f9c406ff1ade8d4a83"
+    },
+    "adrs/ADR-015.md": {
+      "bytes": 845,
+      "sha256": "652d8e8a56754969d4502ad0096e4c531ab5af83e51e9622642e206f7b7fee6a"
+    },
+    "adrs/ADR-016.md": {
+      "bytes": 703,
+      "sha256": "023a6fdd302b80baf55412342d7cebd1ebe5298f0ec34310bfabe00328b24aa6"
+    },
+    "adrs/ADR-017.md": {
+      "bytes": 1745,
+      "sha256": "85c756a757561e0df557cbbd0f1f417819e02b2f89d33fca511b5c7b90261848"
+    },
+    "adrs/ADR-018.md": {
+      "bytes": 778,
+      "sha256": "24aad5ca8e9c477301a4c6842ef860dfea3dedf87787e476cb230e18ac634947"
+    },
+    "adrs/ADR-019.md": {
+      "bytes": 882,
+      "sha256": "d893879ca1bb0c0c4bb4e98163b37e7865b658d8dbf6019a2a76b7b59adbbeff"
+    },
+    "adrs/ADR-020.md": {
+      "bytes": 769,
+      "sha256": "5836ab9ea8f5d85a39ef999d1f6fe9a41ca25b4b64223006bf671ad0c3f6d353"
+    },
+    "adrs/ADR-021.md": {
+      "bytes": 762,
+      "sha256": "ab169296164d1c39de41929c200b956d5e6d482cafc85320644031809a1354b9"
+    },
+    "adrs/ADR-022.md": {
+      "bytes": 798,
+      "sha256": "df702e1457a3f718d4fe5430fb0ea2751c673f87b8a7cad4df0922b7d97ac3c0"
+    },
+    "adrs/ADR-023.md": {
+      "bytes": 1130,
+      "sha256": "b3e5a2663a0f1f372032fea3f5062938ad7575b93bdce412658f9e074314e6d1"
+    },
+    "adrs/ADR-024.md": {
+      "bytes": 767,
+      "sha256": "1888cad2f770e529a22dbaeffe622c168ef2793e0b6956977110a964b62d20fe"
+    },
+    "adrs/ADR-025.md": {
+      "bytes": 862,
+      "sha256": "9a08906bcd0b7645ed20d01257dbea262c841161f4d5fa2a11c47de15b45776f"
+    },
+    "adrs/ADR-026.md": {
+      "bytes": 785,
+      "sha256": "76007441f1d27c3d0070a255c08e14ae078b551edc37f4c58deb0ef551329904"
+    },
+    "adrs/ADR-027.md": {
+      "bytes": 683,
+      "sha256": "3673a50a0d80fd7f98ece784c034a02c2b23205bbcad915c1afb514ff5a19801"
+    },
+    "adrs/ADR-028.md": {
+      "bytes": 802,
+      "sha256": "24087ae847a6e6bffceb1928ddac9fc90995f3b068b05d349351bbd6048b8f3d"
+    },
+    "adrs/README.md": {
+      "bytes": 2224,
+      "sha256": "ee9661fed375935b466bd49a430b83552e825b394691c6d0af4f7c70d6576f18"
+    },
+    "readable/ADR.html": {
+      "bytes": 52370,
+      "sha256": "6eac76f8f7865d1ec729cff7a966e8666e0143e230a2ce3b5fc60c2f21e46bf4"
+    },
+    "readable/HANDOFF.html": {
+      "bytes": 9834,
+      "sha256": "cfa405e20414c240f4a15b1e535d79ca331317473882ecae6b92787a57ff0275"
+    },
+    "readable/IMPLEMENTATION_PLAN.html": {
+      "bytes": 13610,
+      "sha256": "1de5f210fcac9520cef429dceba6c00a9b4db53c985f47856d76d11e911a7422"
+    },
+    "readable/PRD.html": {
+      "bytes": 60913,
+      "sha256": "913fb0174edafee271aa97d259d855dc0869cfaae514f8edf7d1802d3ca259c6"
+    },
+    "readable/TEST_PLAN.html": {
+      "bytes": 24139,
+      "sha256": "7256dd3404d3c71b039252da31e5555e3f65885752ac42ebe6291606a83c365a"
+    },
+    "readable/styles.css": {
+      "bytes": 5441,
+      "sha256": "091d7db71a352d43cd40a690dba8ce664e9f4cd2710fc97fb2ab8a2ddfbbdf44"
+    },
+    "reference/IRuinRelay.sol": {
+      "bytes": 2008,
+      "sha256": "51c1b6e961c868591ab08fcc0b71f23139b9a2728b1e9a4f644fa6a2a2b7ebf9"
+    },
+    "reference/fixtures.json": {
+      "bytes": 1369,
+      "sha256": "a3fada6f1414443bde75adaf8986d3489d79530a8d9062be1f547c5fdfff9a6c"
+    },
+    "GLOSSARY.md": {
+      "bytes": 2283,
+      "sha256": "b0bd68d6cd50a7593df7152311429038908b04722c10e04b0a8aaba8fab7e2cf"
+    },
+    "docs/adr/0029-frozen-run-snapshot.md": {
+      "bytes": 814,
+      "sha256": "0d9ab32b803c1ff836d6a07cd4bb09f0a40e961e1b178d695397d40610fd070d"
+    },
+    "docs/adr/0030-commit-attempt-confirmation.md": {
+      "bytes": 994,
+      "sha256": "fa42e9b87309e83d39c4e8f6c56fbb335535e37cbb6b20ce4f12c8aec14a159d"
+    },
+    "docs/adr/0031-commit-recovery.md": {
+      "bytes": 1401,
+      "sha256": "b4cbcbf1f101f66b9f65071011f39bfaeb1ff5207ee9db6485338a1b15a86356"
+    }
+  }
+}
