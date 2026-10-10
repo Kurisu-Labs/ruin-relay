@@ -74,8 +74,12 @@ for (const failure of [
   {
     name: 'insufficient funds',
     error: {
-      code: -32000,
-      message: 'insufficient funds for gas * price + value',
+      code: -32603,
+      message: 'Internal JSON-RPC error.',
+      data: {
+        code: -32000,
+        message: 'insufficient funds for gas * price + value',
+      },
     } satisfies WalletSendError,
     reason: /not broadcast/,
   },
@@ -156,7 +160,11 @@ test('a timeout with no rejection reason stays unknown across reload', async ({ 
   await expect(page.getByRole('button', { name: 'Refresh status', exact: true })).toBeEnabled();
   await page.getByRole('link', { name: 'History' }).click();
   await expect(page.locator('#history')).toBeVisible();
-  await page.getByLabel('Recover with transaction hash').fill(`0x${'ab'.repeat(32)}`);
+  const accounts: string[] = await rpc('eth_accounts');
+  const unrelated = await rpc('eth_sendTransaction', [
+    { from: accounts[1], to: accounts[1], value: '0x0' },
+  ]);
+  await page.getByLabel('Recover with transaction hash').fill(unrelated);
   await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('unrelated or linkage is ambiguous');
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();

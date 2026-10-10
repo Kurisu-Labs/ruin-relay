@@ -90,6 +90,8 @@ export async function injectWallet(page: Page, account = 0) {
     if (method === 'wallet_requestPermissions')
       return { result: [{ parentCapability: 'eth_accounts' }] };
     if (method === 'wallet_getCapabilities') return { result: {} };
+    if (method === 'wallet_sendTransaction')
+      return { error: { code: -32601, message: 'Method not found' } };
     if (method === 'eth_sendTransaction') {
       control.requests.push({ method, params });
       if (control.mode === 'reject')
