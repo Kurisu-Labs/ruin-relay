@@ -70,3 +70,12 @@ An independent spec reviewer compared the same diff with GitHub issue #1 and the
 No material unasked scope creep was found. Re-review found the two code findings corrected and no concrete introduced defect.
 
 Spec findings: two code findings resolved (highest original severity P2), one release gap remains pending.
+
+## Follow-up validation
+
+The first complete suite run passed the 11 contract tests and 6 rules tests, but exposed three browser failures. Two shared a duplicated-keyboard-event cause; the third exposed speed-up observation after the original transaction disappeared from RPC indexing. These were fixed before the final run:
+
+- Each queued keyboard event is handled once. A deterministic test pauses animation frames and checks the visible position and step count after rapid input.
+- The receipt observer can use a complete, previously verified original RPC transaction only on `TransactionNotFoundError`, with matching hash, sender, nonce, action, and chain. It does not reuse cached receipts or infer success. A deterministic boundary test returns original metadata once and then removes it from RPC responses.
+
+The spec reviewer checked both follow-up fixes and found no concrete introduced defect. Historical replacements outside the observer's available block range can still require manual hash recovery, as described in the README.

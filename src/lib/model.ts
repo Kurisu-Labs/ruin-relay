@@ -1,4 +1,4 @@
-import type { Address, Hash, Hex } from 'viem';
+import type { Address, Hash, Hex, Transaction } from 'viem';
 export interface Snapshot {
   chainId: number;
   address: Address;
@@ -31,6 +31,7 @@ export interface ObservedTransaction {
   value: bigint;
   calldata: Hex;
   linkage: 'wallet-response' | 'same-nonce';
+  rpcTransaction?: Transaction;
 }
 export interface Mutation {
   revision: bigint;

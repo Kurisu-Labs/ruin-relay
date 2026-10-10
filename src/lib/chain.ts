@@ -1,4 +1,5 @@
 import { createPublicClient, decodeEventLog, encodeFunctionData, http, type Hash } from 'viem';
+import { waitForTransactionReceipt } from 'viem/actions';
 import { abi } from '../config/abi';
 import { chain, deployment } from '../config/deployment';
 import fixture from '../../reference/fixtures.json';
@@ -75,6 +76,7 @@ export async function transaction(
     value: tx.value,
     calldata: tx.input,
     linkage,
+    rpcTransaction: tx,
   };
 }
 export function sameAction(attempt: Attempt, tx: ObservedTransaction) {
@@ -93,6 +95,54 @@ export function originalEvidence(attempt: Attempt) {
       tx.hash === attempt.originalHash &&
       sameAction(attempt, tx),
   );
+}
+
+export function observeReceipt(
+  hash: Hash,
+  getAttempt: () => Attempt | undefined,
+  onReplacement: (hash: Hash) => Promise<void>,
+) {
+  const observer = client.extend(() => ({
+    getTransaction: (async (parameters: Parameters<typeof client.getTransaction>[0]) => {
+      try {
+        return await client.getTransaction(parameters);
+      } catch (error) {
+        const attempt = getAttempt();
+        const evidence = attempt && originalEvidence(attempt);
+        const cached = evidence?.rpcTransaction;
+        if (
+          error instanceof Error &&
+          error.name === 'TransactionNotFoundError' &&
+          attempt &&
+          evidence &&
+          cached &&
+          'hash' in parameters &&
+          parameters.hash === evidence.hash &&
+          cached.hash === evidence.hash &&
+          cached.nonce === evidence.nonce &&
+          (cached.chainId === undefined || cached.chainId === chain.id) &&
+          sameAction(attempt, {
+            ...evidence,
+            sender: cached.from,
+            target: cached.to,
+            value: cached.value,
+            calldata: cached.input,
+          })
+        )
+          return cached;
+        throw error;
+      }
+      // Cached data is the same normalized RPC response; viem's generic block-tag
+      // nullability cannot express a historical pending response from a hash lookup.
+    }) as typeof client.getTransaction,
+  }));
+  // The action must receive the extended client; the decorated method closes over the original.
+  return waitForTransactionReceipt(observer, {
+    hash,
+    timeout: 20_000,
+    pollingInterval: 1000,
+    onReplaced: ({ transaction: replacement }) => onReplacement(replacement.hash),
+  });
 }
 
 export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt> {

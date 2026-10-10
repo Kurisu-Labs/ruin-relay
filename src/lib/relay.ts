@@ -10,6 +10,7 @@ import {
   sameAction,
   transaction,
   originalEvidence,
+  observeReceipt,
 } from './chain';
 import { Journal } from './journal';
 import {
@@ -380,15 +381,11 @@ export class Relay {
     const key = `${id}:${hash}`;
     if (this.watching.has(key)) return;
     this.watching.add(key);
-    void client
-      .waitForTransactionReceipt({
-        hash,
-        timeout: 20_000,
-        pollingInterval: 1000,
-        onReplaced: async ({ transaction: replacement }) => {
-          await this.recover(replacement.hash, id);
-        },
-      })
+    void observeReceipt(
+      hash,
+      () => this.state.attempts.find((attempt) => attempt.id === id),
+      (replacement) => this.recover(replacement, id),
+    )
       .then(() => this.refresh())
       .catch(() => this.refresh())
       .finally(() => this.watching.delete(key));

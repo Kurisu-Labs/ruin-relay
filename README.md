@@ -65,6 +65,8 @@ An origin/profile/deployment-scoped Web Lock protects the durable local journal 
 
 Confirmation verifies the captured sender, contract, transaction, event revision/tile/wall mask/direction of change, canonical receipt block, and separately read live state. A contribution can create revision N even when another mutation has already created N+1 in the same block. Terminal inclusions are rechecked; a reorg withdraws success and orphaned history, and reopens the related attempt. RPC failure blocks fresh commits without claiming a reorg. Cached success is revalidated after reload. Clearing site data removes the recovery guarantee.
 
+Speed-up observation can reuse previously verified original transaction metadata if the RPC stops returning that original hash. This supplies historical nonce evidence only; receipts and canonical inclusion are always checked afresh. A replacement mined before the observer's first available block can require **Recover with transaction hash**. Automatic discovery of every historical replacement is not guaranteed.
+
 The contract has no owner, proxy, admin mutation, external call, asset custody, payable function, or token approval. Its bounded path/BFS checks preserve one-bit edits, open endpoints, 49-bit masks, and solvability. This is not an independent security audit.
 
 ## Limitations and credits

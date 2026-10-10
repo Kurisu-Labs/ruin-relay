@@ -1,14 +1,66 @@
 import { test, expect, injectWallet, open, walk, submit, rpc, direct } from './helpers';
 
-test('a verified speed-up is followed automatically through its replacement hash', async ({
+test('speed-up recovery uses verified original metadata when RPC stops returning the original transaction', async ({
   page,
 }) => {
   const wallet = await injectWallet(page);
+  let originalReads = 0;
+  let deliveredOriginal = false;
+  await page.route('http://127.0.0.1:8545/**', async (route) => {
+    const request = route.request().postDataJSON();
+    if (request.method === 'eth_getTransactionByHash' && request.params[0] === wallet.hash) {
+      if (++originalReads > 1)
+        return route.fulfill({ json: { jsonrpc: '2.0', id: request.id, result: null } });
+      const response = await route.fetch();
+      const json = await response.json();
+      await route.fulfill({ response, json });
+      deliveredOriginal = Boolean(json.result);
+      return;
+    }
+    return route.continue();
+  });
   await rpc('evm_setAutomine', [false]);
   await open(page);
   await walk(page);
   await submit(page);
   await expect(page.getByText('COMMIT ATTEMPT · PENDING')).toBeVisible();
+  await expect.poll(() => deliveredOriginal).toBe(true);
+  const original = await rpc('eth_getTransactionByHash', [wallet.hash]);
+  const hash = await rpc('eth_sendTransaction', [
+    {
+      ...wallet.requests[0].params[0],
+      maxFeePerGas: `0x${(BigInt(original.maxFeePerGas ?? original.gasPrice) * 2n + 1n).toString(16)}`,
+      maxPriorityFeePerGas: `0x${(BigInt(original.maxPriorityFeePerGas ?? original.gasPrice) * 2n + 1n).toString(16)}`,
+    },
+  ]);
+  await rpc('evm_mine');
+  await rpc('evm_setAutomine', [true]);
+  await expect(page.locator('.success')).toHaveCount(1);
+  await expect(page.locator('.transaction')).toContainText(hash);
+  await expect(page.locator('.transaction')).toContainText(wallet.hash!);
+  expect(wallet.requests).toHaveLength(1);
+});
+
+test('a verified speed-up is followed automatically through its replacement hash', async ({
+  page,
+}) => {
+  const wallet = await injectWallet(page);
+  let deliveredOriginal = false;
+  await page.route('http://127.0.0.1:8545/**', async (route) => {
+    const request = route.request().postDataJSON();
+    if (request.method !== 'eth_getTransactionByHash' || request.params[0] !== wallet.hash)
+      return route.continue();
+    const response = await route.fetch();
+    const json = await response.json();
+    await route.fulfill({ response, json });
+    deliveredOriginal ||= Boolean(json.result);
+  });
+  await rpc('evm_setAutomine', [false]);
+  await open(page);
+  await walk(page);
+  await submit(page);
+  await expect(page.getByText('COMMIT ATTEMPT · PENDING')).toBeVisible();
+  await expect.poll(() => deliveredOriginal).toBe(true);
   const original = await rpc('eth_getTransactionByHash', [wallet.hash]);
   const hash = await rpc('eth_sendTransaction', [
     {
