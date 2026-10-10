@@ -8,7 +8,8 @@ The implementation is already on `main` at `3019097`. This release follow-up tra
 
 - [x] Implement the contract, wallet-free game, fixed run snapshots, edit drafts, durable commit attempts, recovery, and public history.
 - [x] Record local contract, rules, browser, build, and formatting validation, and address the code-review findings.
-- [ ] Fund both selected release wallets with Arbitrum Sepolia ETH and connect their signing setup; confirm chain ID 421614 before deploying.
+- [x] Fund both selected release wallets with Arbitrum Sepolia ETH and verify their balances on chain ID 421614.
+- [ ] Connect wallet A through its Firefox extension and approve the deployment request.
 - [ ] Deploy a fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
 - [ ] In browser profile A, submit tile 31 from revision 0 and record its real receipt, explorer link, and resulting walls `0xd05b827900a`.
 - [ ] In separate browser profile B, submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
@@ -22,14 +23,14 @@ Keep issue #1 open until the unchecked release requirements have verifiable evid
 
 ### Selected release wallets
 
-Provided by the operator on 10 October 2026 (Asia/Jakarta), with balances read from the Arbitrum Sepolia RPC on chain 421614:
+Provided by the operator on 10 October 2026 (Asia/Jakarta). Funding was verified at 23:30:01 WIB on chain 421614, block `317791963`, hash `0x69a78fd952457622c9d28a33eab2890997027776a8b0292a3c6bec0558bc07e2`:
 
 | Purpose             | Address                                      | Test ETH |
 | ------------------- | -------------------------------------------- | -------- |
-| Deployer / player A | `0x37714b787066ce967d027B752D045e13b8b64A84` | 0        |
-| Player B            | `0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9` | 0        |
+| Deployer / player A | `0x37714b787066ce967d027B752D045e13b8b64A84` | 0.05     |
+| Player B            | `0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9` | 0.05     |
 
-The operator reports an existing Firefox wallet extension. Firefox is unavailable through this session's browser-control connection, so wallet approvals require operator interaction. The real A/B demonstration requires separate Firefox profiles. Funding is still pending, and the CLI signer remains configured for the generated local wallets. These addresses are not deployment or mutation evidence.
+The operator reports an existing Firefox wallet extension. Firefox is unavailable through this session's browser-control connection, so wallet approvals require operator interaction. The real A/B demonstration requires separate Firefox profiles. Funding is complete; deployment signing is pending. The CLI signer remains configured for the generated local wallets. These addresses and balances are not deployment or mutation evidence.
 
 ### Generated local wallets
 
