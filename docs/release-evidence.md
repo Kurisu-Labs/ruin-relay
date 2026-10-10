@@ -2,6 +2,22 @@
 
 Status: local implementation, automated checks, and code review completed. The Sepolia release is **not complete**.
 
+## Issue #1 completion checklist
+
+The implementation is already on `main` at `3019097`. This release follow-up tracks the remaining acceptance evidence for [issue #1](https://github.com/Kurisu-Labs/ruin-relay/issues/1).
+
+- [x] Implement the contract, wallet-free game, fixed run snapshots, edit drafts, durable commit attempts, recovery, and public history.
+- [x] Record local contract, rules, browser, build, and formatting validation, and address the code-review findings.
+- [ ] Fund both generated wallets with Arbitrum Sepolia ETH; confirm chain ID 421614 before deploying.
+- [ ] Deploy a fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
+- [ ] In browser profile A, submit tile 31 from revision 0 and record its real receipt, explorer link, and resulting walls `0xd05b827900a`.
+- [ ] In separate browser profile B, submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
+- [ ] Record gas used for deployment and both real mutations, plus visible board changes and public history.
+- [ ] Include a safety-rejection demonstration and the keyboard/mobile inspection evidence in the release materials.
+- [ ] Record the English product demo (at most three minutes) and separate presentation (two to three minutes).
+
+Keep issue #1 open until the unchecked release requirements have verifiable evidence. Keep the release PR in draft while these gates are pending. Local Anvil hashes, a CLI rehearsal, and recording scripts do not satisfy the real two-profile browser demonstration. The commands and canonical routes are documented below and in the README.
+
 ## Public test-wallet setup
 
 Generated on 10 October 2026 (Asia/Jakarta):

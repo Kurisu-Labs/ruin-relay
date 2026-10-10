@@ -4,7 +4,7 @@
 
 A desktop browser puzzle with one shared 7×7 dungeon. Play locally without a wallet; a valid escape lets you toggle one allowed tile through a single Solidity transaction. The contract verifies the path against the old dungeon and checks that the new dungeon still has an escape route.
 
-The application and local test harness are implemented. **The Sepolia release gate is pending:** no public deployment, verified explorer source, real mutation hashes, or release videos are claimed here. See [release evidence](docs/release-evidence.md).
+The application and local test harness are implemented. **The Sepolia release gate is pending:** no public deployment, verified explorer source, real mutation hashes, or release videos are claimed here. See the [issue #1 completion checklist](docs/release-evidence.md#issue-1-completion-checklist) and [release evidence](docs/release-evidence.md).
 
 ## Run locally
 
