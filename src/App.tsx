@@ -111,8 +111,14 @@ export default function App() {
                 <Board
                   run={run}
                   tile={tile}
+                  locked={relay.locked}
+                  contribution={
+                    latestAttempt?.state === 'confirmed' ? latestAttempt.mutation : undefined
+                  }
+                  attemptState={latestAttempt?.state}
                   onMove={(d) => relay.move(d)}
                   onRestart={() => relay.restart()}
+                  onSelect={(index) => relay.select(index)}
                 />
               ) : (
                 <div className="board-placeholder">
@@ -121,12 +127,6 @@ export default function App() {
                     : 'Waiting for the dungeon. Check the RPC connection and refresh.'}
                 </div>
               )}
-              <div className="legend">
-                <span>△ You</span>
-                <span>▤ Wall</span>
-                <span>□ Floor</span>
-                <span>◇ Exit</span>
-              </div>
             </div>
             <aside className="panel" aria-label="Run and edit controls">
               <p className="eyebrow">YOUR RUN</p>
@@ -143,7 +143,7 @@ export default function App() {
               {!escaped && (
                 <p className="muted">
                   Focus the board. Move with <kbd>WASD</kbd> or the arrow keys. <kbd>R</kbd>{' '}
-                  restarts. Reach EXIT to choose one edit.
+                  restarts. W moves up, A left, S down, and D right. Reach EXIT to choose one edit.
                 </p>
               )}
               {run && run.path.length >= MAX_MOVES && !escaped && (

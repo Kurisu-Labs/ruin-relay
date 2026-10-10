@@ -1,158 +1,268 @@
 import { useEffect, useRef, useState } from 'react';
-import type Phaser from 'phaser';
-import type { Run } from '../lib/model';
-import { wallAt, type Direction } from '../lib/rules';
+import type { AttemptState, Mutation, Run } from '../lib/model';
+import { editable, EXIT, MAX_MOVES, move, wallAt, type Direction } from '../lib/rules';
+import type { GameBridge } from './GameBridge';
+import { keyIntent } from './input';
+import type { GameFrame } from './presentation';
+import { GameSound } from './sound';
 
-export function Board({
-  run,
-  tile,
-  onMove,
-  onRestart,
-}: {
+interface Props {
   run: Run;
   tile?: number;
-  onMove: (d: Direction) => void;
+  locked: boolean;
+  contribution?: Mutation;
+  attemptState?: AttemptState;
+  onMove: (direction: Direction) => void;
   onRestart: () => void;
-}) {
+  onSelect: (tile: number) => void;
+}
+
+function initialMotion() {
+  try {
+    const saved = localStorage.getItem('ruin-relay:motion');
+    return saved === null
+      ? matchMedia('(prefers-reduced-motion: reduce)').matches
+      : saved === 'reduced';
+  } catch {
+    return false;
+  }
+}
+
+export function Board(props: Props) {
+  const { run, tile, locked, contribution, attemptState } = props;
   const host = useRef<HTMLDivElement>(null);
+  const bridge = useRef<GameBridge | undefined>(undefined);
+  const sound = useRef<GameSound | undefined>(undefined);
   const [ready, setReady] = useState(false);
-  const sceneRef = useRef<Phaser.Scene | null>(null);
-  const current = useRef({ run, tile, onMove, onRestart });
-  current.current = { run, tile, onMove, onRestart };
-  const drawRef = useRef<() => void>(() => {});
+  const [error, setError] = useState<string>();
+  const [retry, setRetry] = useState(0);
+  const [hover, setHover] = useState<number>();
+  const [muted, setMuted] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(initialMotion);
+  const [showLabels, setShowLabels] = useState(false);
+  const overview = run.position === EXIT;
+  const frame: GameFrame = {
+    run,
+    tile,
+    locked,
+    contribution,
+    attemptState,
+    reducedMotion,
+    showLabels,
+    overview,
+  };
+  const current = useRef({ props, frame, ready, error, muted });
+  current.current = { props, frame, ready, error, muted };
+
   useEffect(() => {
-    let game: Phaser.Game | undefined;
-    let disposed = false;
-    void import('phaser').then(({ default: Phaser }) => {
-      if (disposed || !host.current) return;
-      class Dungeon extends Phaser.Scene {
-        create() {
-          setReady(true);
-          sceneRef.current = this;
-          drawRef.current = () => {
-            this.children.removeAll(true);
-            const { run, tile } = current.current;
-            const graphics = this.add.graphics();
-            for (let i = 0; i < 49; i++) {
-              const x = (i % 7) * 80;
-              const y = Math.floor(i / 7) * 80;
-              const wall = wallAt(run.snapshot.walls, i);
-              graphics.fillStyle(wall ? 0x394444 : 0x182325);
-              graphics.fillRoundedRect(x + 3, y + 3, 74, 74, 5);
-              graphics.lineStyle(1, wall ? 0x566160 : 0x293638);
-              graphics.strokeRoundedRect(x + 3, y + 3, 74, 74, 5);
-              if (wall) {
-                graphics.lineBetween(x + 4, y + 39, x + 76, y + 39);
-                graphics.lineBetween(x + 30, y + 4, x + 30, y + 39);
-                graphics.lineBetween(x + 55, y + 39, x + 55, y + 76);
-              }
-              this.add.text(x + 9, y + 7, String(i).padStart(2, '0'), {
-                fontFamily: 'monospace',
-                fontSize: '11px',
-                color: wall ? '#9ca9a4' : '#718782',
-              });
-              if (i === 0 || i === 48) {
-                this.add
-                  .text(x + 40, y + 43, i === 0 ? 'START' : 'EXIT', {
-                    fontFamily: 'monospace',
-                    fontSize: '13px',
-                    color: i === 0 ? '#9bded0' : '#efc880',
-                  })
-                  .setOrigin(0.5);
-                graphics.lineStyle(2, i === 0 ? 0x80baab : 0xefc880);
-                graphics.strokeRoundedRect(x + 8, y + 8, 64, 64, 5);
-              }
-              if (i === tile) {
-                graphics.lineStyle(4, 0xe8c98b);
-                graphics.strokeRoundedRect(x + 5, y + 5, 70, 70, 5);
-                this.add
-                  .text(x + 40, y + 62, wall ? '→ FLOOR' : '→ WALL', {
-                    fontFamily: 'monospace',
-                    fontSize: '11px',
-                    color: '#ffe4ad',
-                    backgroundColor: '#162325',
-                  })
-                  .setOrigin(0.5);
-              }
-            }
-            const px = (run.position % 7) * 80 + 40;
-            const py = Math.floor(run.position / 7) * 80 + 42;
-            graphics.fillStyle(0x080e10, 0.5);
-            graphics.fillEllipse(px, py + 15, 30, 12);
-            graphics.fillStyle(0x9cdbcc);
-            graphics.fillTriangle(px, py - 3, px - 13, py + 14, px + 13, py + 14);
-            graphics.fillStyle(0xf5d7a0);
-            graphics.fillCircle(px, py - 10, 9);
-            graphics.fillStyle(0x3b645d);
-            graphics.fillTriangle(px - 12, py - 14, px + 12, py - 14, px + 2, py - 27);
-          };
-          drawRef.current();
-          // Phaser can process the same queued DOM event again before the next frame.
-          const handledKeys = new WeakSet<KeyboardEvent>();
-          this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
-            if (handledKeys.has(event)) return;
-            handledKeys.add(event);
-            if (!host.current?.contains(document.activeElement)) return;
-            if (event.key.toLowerCase() === 'r') {
-              event.preventDefault();
-              current.current.onRestart();
-              return;
-            }
-            const direction = (
-              {
-                ArrowUp: 'U',
-                w: 'U',
-                W: 'U',
-                ArrowRight: 'R',
-                d: 'R',
-                D: 'R',
-                ArrowDown: 'D',
-                s: 'D',
-                S: 'D',
-                ArrowLeft: 'L',
-                a: 'L',
-                A: 'L',
-              } as Record<string, Direction>
-            )[event.key];
-            if (direction) {
-              event.preventDefault();
-              current.current.onMove(direction);
-            }
-          });
-        }
+    const media = matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      try {
+        if (localStorage.getItem('ruin-relay:motion') !== null) return;
+      } catch {
+        /* Session preference. */
       }
-      game = new Phaser.Game({
-        type: Phaser.CANVAS,
-        width: 560,
-        height: 560,
-        parent: host.current,
-        backgroundColor: '#101719',
-        scene: Dungeon,
-        audio: { noAudio: true },
-        scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-        banner: false,
-      });
-    });
+      setReducedMotion(media.matches);
+    };
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    let disposed = false;
+    let engine: GameBridge | undefined;
+    setReady(false);
+    setError(undefined);
+    setHover(undefined);
+    sound.current ??= new GameSound();
+    const fail = (message: string) => {
+      if (disposed) return;
+      setReady(false);
+      setError(message);
+    };
+    void import('./GameBridge')
+      .then(({ GameBridge }) => {
+        if (disposed || !host.current) return;
+        try {
+          engine = new GameBridge(host.current, current.current.frame, {
+            onSelect: (index) => {
+              if (!disposed) current.current.props.onSelect(index);
+            },
+            onHover: (index) => {
+              if (!disposed) setHover(index);
+            },
+            onReady: () => {
+              if (!disposed) {
+                setReady(true);
+                setError(undefined);
+              }
+            },
+            onError: fail,
+            onCue: (cue) => {
+              if (!disposed) sound.current?.play(cue);
+            },
+          });
+          bridge.current = engine;
+        } catch {
+          fail(
+            'This browser could not start WebGL. Enable hardware acceleration, then retry the dungeon view.',
+          );
+        }
+      })
+      .catch(() => fail('The game engine could not load. Check the connection and retry.'));
+    const timeout = setTimeout(() => {
+      if (!current.current.ready && !current.current.error)
+        fail('The dungeon view is taking too long to load. Retry to reconnect.');
+    }, 20000);
+    const element = host.current;
+    const handled = new WeakSet<KeyboardEvent>();
+    const keydown = (event: KeyboardEvent) => {
+      if (
+        handled.has(event) ||
+        !element ||
+        document.activeElement !== element ||
+        event.target !== element
+      )
+        return;
+      const intent = keyIntent(event);
+      if (!intent || !current.current.ready || current.current.error) return;
+      handled.add(event);
+      event.preventDefault();
+      const { props: latest } = current.current;
+      if (intent === 'restart') {
+        if (!latest.locked) bridge.current?.resetMotion();
+        latest.onRestart();
+        return;
+      }
+      if (
+        !latest.locked &&
+        latest.run.position !== EXIT &&
+        latest.run.path.length < MAX_MOVES &&
+        move(latest.run.snapshot.walls, latest.run.position, intent) === null
+      ) {
+        sound.current?.play('blocked');
+        bridge.current?.blocked();
+      }
+      // Relay reads its current state synchronously, even before React has rendered a preceding reset.
+      latest.onMove(intent);
+    };
+    const blur = () => bridge.current?.clearHover();
+    element?.addEventListener('keydown', keydown);
+    element?.addEventListener('blur', blur);
+    const visibility = () => {
+      if (document.hidden) {
+        bridge.current?.clearHover();
+        void sound.current?.enable(false);
+      } else if (!current.current.muted) void sound.current?.enable(true);
+    };
+    document.addEventListener('visibilitychange', visibility);
     return () => {
       disposed = true;
-      sceneRef.current = null;
-      game?.destroy(true);
+      clearTimeout(timeout);
+      element?.removeEventListener('keydown', keydown);
+      element?.removeEventListener('blur', blur);
+      document.removeEventListener('visibilitychange', visibility);
+      if (bridge.current === engine) bridge.current = undefined;
+      engine?.destroy();
     };
-  }, []);
+  }, [retry]);
+
   useEffect(() => {
-    drawRef.current();
-  }, [run, tile]);
+    bridge.current?.setFrame(frame);
+  }, [run, tile, locked, contribution, attemptState, reducedMotion, showLabels, overview]);
+  useEffect(
+    () => () => {
+      sound.current?.destroy();
+      sound.current = undefined;
+    },
+    [],
+  );
+
+  const inspected = tile ?? hover;
+  const inspectedText =
+    inspected === undefined
+      ? undefined
+      : `Tile ${inspected} · ${wallAt(run.snapshot.walls, inspected) ? 'Wall' : 'Floor'} · ${editable(run.snapshot.editableMask, inspected) ? 'Editable after escape' : 'Fixed'}`;
+  const phase = locked
+    ? 'Transaction in progress · controls locked'
+    : run.position === EXIT
+      ? 'Escaped · choose one highlighted tile'
+      : run.path.length >= MAX_MOVES
+        ? 'Move limit reached · restart to try again'
+        : 'Reach the glowing exit';
+
   return (
-    <div
-      className="board"
-      ref={host}
-      role="application"
-      aria-busy={!ready}
-      tabIndex={0}
-      aria-label={`Dungeon board. Player at tile ${run.position}. Use WASD or arrow keys.`}
-      onPointerDown={() => host.current?.focus()}
-    >
-      {!ready && <span>Loading dungeon controls…</span>}
-    </div>
+    <>
+      <div className="board-heading" aria-hidden="true">
+        <span>THE RUINS</span>
+        <span>{overview ? 'CHOOSE YOUR CHANGE' : 'EXPLORING THE RUINS'}</span>
+      </div>
+      <div className="board-viewport">
+        <div
+          className="board"
+          ref={host}
+          role="application"
+          aria-busy={!ready}
+          data-view={overview ? 'map' : 'follow'}
+          aria-describedby="board-instructions"
+          aria-keyshortcuts="W A S D ArrowUp ArrowRight ArrowDown ArrowLeft R"
+          tabIndex={0}
+          aria-label={`Dungeon board. Player at tile ${run.position}. Use WASD or arrow keys.`}
+          onPointerDown={() => host.current?.focus({ preventScroll: true })}
+        />
+        <div className="board-compass" aria-hidden="true">
+          N ↑
+        </div>
+        <div className="board-camera-note" aria-hidden="true">
+          {overview ? 'Escape complete · choose one edit' : 'Close view · camera follows you'}
+        </div>
+        {!ready && (
+          <div className="board-message" role={error ? 'alert' : 'status'}>
+            <span className="board-rune" aria-hidden="true">
+              ◈
+            </span>
+            <p>{error || 'Lighting the dungeon…'}</p>
+            {error && <button onClick={() => setRetry((n) => n + 1)}>Retry dungeon view</button>}
+          </div>
+        )}
+      </div>
+      <div className="board-status" role="status" aria-live="polite" aria-atomic="true">
+        {locked ? phase : inspectedText || phase}
+      </div>
+      <div className="board-options" aria-label="Dungeon view preferences">
+        <button
+          aria-pressed={!muted}
+          onClick={() => {
+            const next = !muted;
+            setMuted(next);
+            void sound.current?.enable(!next);
+          }}
+        >
+          Sound {muted ? 'off' : 'on'}
+        </button>
+        <button
+          aria-pressed={reducedMotion}
+          onClick={() => {
+            const next = !reducedMotion;
+            setReducedMotion(next);
+            try {
+              localStorage.setItem('ruin-relay:motion', next ? 'reduced' : 'full');
+            } catch {
+              /* Session preference. */
+            }
+          }}
+        >
+          Reduced motion
+        </button>
+        <button aria-pressed={showLabels} onClick={() => setShowLabels((value) => !value)}>
+          Tile numbers
+        </button>
+      </div>
+      <p id="board-instructions" className="board-instructions">
+        Focus the dungeon to play. <kbd>W ↑</kbd> up · <kbd>A ←</kbd> left · <kbd>S ↓</kbd> down ·{' '}
+        <kbd>D →</kbd> right · <kbd>R</kbd> restart. After escape, the edit map opens. Choose a
+        highlighted floor to preview a new wall, or use the tile buttons.
+      </p>
+    </>
   );
 }
