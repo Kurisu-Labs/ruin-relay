@@ -14,7 +14,8 @@
     "local": "node scripts/local.mjs",
     "abi": "node scripts/abi.mjs",
     "format": "prettier --write src tests scripts *.config.ts tsconfig.json package.json .prettierrc.json README.md docs/release-evidence.md docs/demo-script.md docs/presentation.md",
-    "format:check": "prettier --check src tests scripts *.config.ts tsconfig.json package.json .prettierrc.json README.md docs/release-evidence.md docs/demo-script.md docs/presentation.md"
+    "format:check": "prettier --check src tests scripts *.config.ts tsconfig.json package.json .prettierrc.json README.md docs/release-evidence.md docs/demo-script.md docs/presentation.md",
+    "assets:game": "python3 scripts/game-assets-v2.py"
   },
   "dependencies": {
     "@wagmi/connectors": "8.2.0",

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "projection": {
+    "view": "SW to NE",
+    "tileWidth": 64,
+    "tileHeight": 32
+  },
+  "atlas": "dungeon.png",
+  "metadata": "dungeon.json",
+  "frameCount": 64,
+  "sha256": "ae3d3d2ec283703519cace121eabff27fa9dbe233645501c6293e4bcf274e87e",
+  "provenance": {
+    "creator": "Ruin Relay project",
+    "method": "Original deterministic pixel drawing",
+    "source": "scripts/game-assets.py",
+    "license": "MIT",
+    "thirdPartyArt": false,
+    "aiGeneratedArt": false
+  }
+}

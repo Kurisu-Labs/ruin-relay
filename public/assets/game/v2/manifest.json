@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "projection": "screen-aligned top-down",
+  "tileSize": 96,
+  "provenance": {
+    "method": "Built-in imagegen; unmodified generated PNGs",
+    "aiGeneratedArt": true,
+    "thirdPartyArt": false,
+    "prompts": "prompts.md",
+    "credits": "credits.md"
+  },
+  "atlases": [
+    {
+      "image": "environment.png",
+      "metadata": "environment.json",
+      "frames": 16,
+      "width": 1254,
+      "height": 1254,
+      "bytes": 2700467,
+      "sha256": "8d28c393cb6c6f938e718922e62fbb7d459f666fe6f4b38505f9fc7c3c37ef8c"
+    },
+    {
+      "image": "adventurer.png",
+      "metadata": "adventurer.json",
+      "frames": 16,
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1156730,
+      "sha256": "7da466c0e1b14b72e7410c0320f5b85ac43ce98fd5de1c965af45e115efd20da"
+    }
+  ]
+}
