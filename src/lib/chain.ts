@@ -86,6 +86,15 @@ export function sameAction(attempt: Attempt, tx: ObservedTransaction) {
   );
 }
 
+export function originalEvidence(attempt: Attempt) {
+  return attempt.observed.find(
+    (tx) =>
+      tx.linkage === 'wallet-response' &&
+      tx.hash === attempt.originalHash &&
+      sameAction(attempt, tx),
+  );
+}
+
 export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt> {
   if (attempt.state === 'rejected') return attempt;
   const result = { ...attempt, mutation: undefined };
@@ -133,7 +142,7 @@ export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt>
     activeHash,
     activeHash === attempt.originalHash ? 'wallet-response' : 'same-nonce',
   );
-  const original = attempt.observed.find((item) => item.linkage === 'wallet-response');
+  const original = originalEvidence(attempt);
   const linked =
     (tx.hash === attempt.originalHash && sameAction(attempt, tx)) ||
     (tx.sender.toLowerCase() === attempt.account.toLowerCase() && original?.nonce === tx.nonce);
@@ -143,6 +152,8 @@ export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt>
       state: 'unknown',
       message: 'Transaction linkage is ambiguous. The attempt remains locked.',
     };
+  if (tx.hash === attempt.originalHash && sameAction(attempt, tx))
+    result.observed = [...attempt.observed.filter((item) => item.hash !== tx.hash), tx];
   if (!sameAction(attempt, tx)) {
     const cancelled =
       tx.target?.toLowerCase() === tx.sender.toLowerCase() &&

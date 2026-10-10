@@ -151,3 +151,30 @@ test('a tab with unsaved status preserves replacement evidence recorded by anoth
   await expect(other.locator('.transaction')).toContainText(wallet.hash!);
   expect(wallet.requests).toHaveLength(1);
 });
+
+test('wrong-sender transaction metadata cannot supply original nonce evidence', async ({
+  page,
+}) => {
+  const wallet = await injectWallet(page);
+  const accounts = await rpc('eth_accounts');
+  await rpc('evm_setAutomine', [false]);
+  await page.route('http://127.0.0.1:8545/**', async (route) => {
+    const request = route.request().postDataJSON();
+    if (request.method !== 'eth_getTransactionByHash' || request.params[0] !== wallet.hash)
+      return route.continue();
+    const response = await route.fetch();
+    const json = await response.json();
+    if (json.result) Object.assign(json.result, { from: accounts[1], nonce: '0x0' });
+    await route.fulfill({ response, json });
+  });
+  await open(page);
+  await walk(page);
+  await submit(page);
+  await expect(page.getByText('COMMIT ATTEMPT · PENDING')).toBeVisible();
+  const block = await rpc('eth_getBlockByNumber', ['0x1', false]);
+  await page.getByLabel('Recover with transaction hash').fill(block.transactions[0]);
+  await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('unrelated or linkage is ambiguous');
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  expect(wallet.requests).toHaveLength(1);
+});

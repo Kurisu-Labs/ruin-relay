@@ -2,7 +2,15 @@ import { isHash, type Address, type Hash } from 'viem';
 import fixture from '../../reference/fixtures.json';
 import { abi } from '../config/abi';
 import { configured, deployment } from '../config/deployment';
-import { calldata, client, readDungeon, readHistory, sameAction, transaction } from './chain';
+import {
+  calldata,
+  client,
+  readDungeon,
+  readHistory,
+  sameAction,
+  transaction,
+  originalEvidence,
+} from './chain';
 import { Journal } from './journal';
 import {
   sameDungeon,
@@ -337,6 +345,8 @@ export class Relay {
       });
       try {
         const observed = await transaction(hash, 'wallet-response');
+        if (!sameAction(attempt, observed))
+          throw new Error('Original transaction does not match the attempt.');
         this.set({
           attempts: await this.journal.update(id, (a) => ({
             ...a,
@@ -393,7 +403,7 @@ export class Relay {
     }
     try {
       const tx = await transaction(hashText, 'same-nonce');
-      let original = attempt.observed.find((t) => t.linkage === 'wallet-response');
+      let original = originalEvidence(attempt);
       if (!original && attempt.originalHash) {
         try {
           const observed = await transaction(attempt.originalHash, 'wallet-response');
