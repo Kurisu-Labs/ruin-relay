@@ -75,6 +75,6 @@ Testnet only. No tokens, NFTs, or monetary rewards. Public solutions can be reus
 
 MIT-licensed project code; geometric dungeon artwork is original code. React, Phaser, viem, wagmi, Vite, Vitest, Playwright, and Foundry retain their respective upstream licenses. Typography uses Google Fonts DM Sans and Space Grotesk (SIL Open Font License), with system fallbacks.
 
-Prior work: the PRD, ADRs, glossary, interface, and fixtures existed before this implementation; the application, contract, and executable harness were added for issue [#1](https://github.com/Kurisu-Labs/ruin-relay/issues/1). Record the actual development window and completed release evidence before submission. Product demo target: ≤3 minutes; separate presentation target: 2–3 minutes. Check current competition rules before submitting.
+Prior work: the PRD, ADRs, glossary, interface, and fixtures existed before this implementation; the application, contract, and executable harness were added for issue [#1](https://github.com/Kurisu-Labs/ruin-relay/issues/1). Record the actual development window and completed release evidence before submission. Product demo target: ≤3 minutes; separate presentation target: 1–3 minutes. Check current competition rules before submitting.
 
 Draft English recording plans are provided for the [product demo](docs/demo-script.md) and [presentation](docs/presentation.md). They require actual Sepolia evidence before recording.
