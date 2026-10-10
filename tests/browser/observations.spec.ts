@@ -89,6 +89,37 @@ test('a pending edit that loses the revision race has a reverted receipt and no 
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
 });
 
+for (const mismatch of ['receipt', 'transaction']) {
+  test(`a mismatched ${mismatch} hash cannot confirm the requested edit`, async ({ page }) => {
+    await injectWallet(page);
+    await page.route('http://127.0.0.1:8545/**', async (route) => {
+      const method = route.request().postDataJSON().method;
+      if (
+        method !==
+        (mismatch === 'receipt' ? 'eth_getTransactionReceipt' : 'eth_getTransactionByHash')
+      )
+        return route.continue();
+      const response = await route.fetch();
+      const json = await response.json();
+      const wrong = `0x${'1'.repeat(64)}`;
+      if (json.result) {
+        if (mismatch === 'transaction') json.result.hash = wrong;
+        else {
+          json.result.transactionHash = wrong;
+          for (const log of json.result.logs) log.transactionHash = wrong;
+        }
+      }
+      await route.fulfill({ response, json });
+    });
+    await open(page);
+    await walk(page);
+    await submit(page);
+    await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
+    await expect(page.locator('.success')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  });
+}
+
 test('the move cap freezes exploration and keyboard controls remain reachable', async ({
   page,
 }) => {

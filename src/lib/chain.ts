@@ -63,6 +63,8 @@ export async function transaction(
   linkage: ObservedTransaction['linkage'],
 ): Promise<ObservedTransaction> {
   const tx = await client.getTransaction({ hash });
+  if (tx.hash.toLowerCase() !== hash.toLowerCase())
+    throw new Error('RPC returned a different transaction hash.');
   if (tx.chainId !== undefined && tx.chainId !== chain.id)
     throw new Error('Transaction is on another chain.');
   return {
@@ -103,29 +105,33 @@ export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt>
         'Check your wallet for this transaction. Recover with transaction hash if available.',
     };
   let receipt;
-  try {
-    receipt = await client.getTransactionReceipt({ hash: attempt.activeHash });
-  } catch (error) {
-    if (error instanceof Error && error.name === 'TransactionReceiptNotFoundError')
-      return {
-        ...result,
-        state: 'pending',
-        message: 'Waiting for your transaction to confirm. Your edit is not confirmed yet.',
-      };
-    throw error;
+  let activeHash = attempt.activeHash;
+  for (const hash of new Set([attempt.activeHash, ...attempt.hashes])) {
+    try {
+      const candidate = await client.getTransactionReceipt({ hash });
+      if (candidate.transactionHash.toLowerCase() !== hash.toLowerCase())
+        throw new Error('RPC returned a receipt for a different transaction.');
+      const canonical = await client.getBlock({ blockNumber: candidate.blockNumber });
+      if (canonical.hash !== candidate.blockHash) continue;
+      receipt = candidate;
+      activeHash = hash;
+      break;
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'TransactionReceiptNotFoundError'))
+        throw error;
+    }
   }
-  const canonical = await client.getBlock({ blockNumber: receipt.blockNumber });
-  if (canonical.hash !== receipt.blockHash)
+  if (!receipt)
     return {
       ...result,
-      state: 'unknown',
-      inclusion: undefined,
-      message: 'Receipt inclusion changed. Still checking your transaction.',
+      state: 'pending',
+      message: 'Waiting for your transaction to confirm. Your edit is not confirmed yet.',
     };
+  result.activeHash = activeHash;
   result.inclusion = { blockNumber: receipt.blockNumber, blockHash: receipt.blockHash };
   const tx = await transaction(
-    attempt.activeHash,
-    attempt.activeHash === attempt.originalHash ? 'wallet-response' : 'same-nonce',
+    activeHash,
+    activeHash === attempt.originalHash ? 'wallet-response' : 'same-nonce',
   );
   const original = attempt.observed.find((item) => item.linkage === 'wallet-response');
   const linked =
