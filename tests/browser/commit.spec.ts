@@ -80,8 +80,8 @@ test('pending attempts survive reload and status reads never resubmit', async ({
   expect(wallet.requests).toHaveLength(1);
   await rpc('evm_mine');
   await rpc('evm_setAutomine', [true]);
-  await page.getByRole('button', { name: 'Retry status', exact: true }).click();
   await expect(page.locator('.success')).toHaveCount(1);
+  expect(wallet.requests).toHaveLength(1);
 });
 
 test('a lost wallet response without original linkage remains locked after manual hash recovery', async ({
