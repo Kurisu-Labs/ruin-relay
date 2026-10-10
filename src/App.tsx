@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { formatEther } from 'viem';
+import { formatEther, formatGwei } from 'viem';
 import { configured, deployment } from './config/deployment';
 import { Board } from './game/Board';
 import { Relay } from './lib/relay';
@@ -252,10 +252,12 @@ export default function App() {
                     tile {state.prepared.tile}
                   </p>
                   <p>
-                    Estimated gas: {state.prepared.gas.toString()} units
+                    Gas limit {state.prepared.gas.toString()}
                     <br />
-                    Estimated network fee: {formatEther(state.prepared.fee)} test ETH. Wallet
-                    estimate may differ.
+                    Max fee per gas {formatGwei(state.prepared.maxFeePerGas)} gwei, twice the latest
+                    base fee plus the priority fee. This cap is refreshed when you submit.
+                    <br />
+                    Maximum fee at that cap: {formatEther(state.prepared.fee)} test ETH
                   </p>
                   <button
                     className="primary wide"
@@ -272,7 +274,7 @@ export default function App() {
                   {state.error}
                 </p>
               )}
-              {state.error.includes('network') && (
+              {state.error.startsWith('Wrong network.') && (
                 <button onClick={() => void relay.switchNetwork()}>
                   Switch to Arbitrum Sepolia
                 </button>

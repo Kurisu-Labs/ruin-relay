@@ -16,6 +16,23 @@ export const client = createPublicClient({
   pollingInterval: 1000,
 });
 
+/**
+ * Cap the commit at twice the latest base fee plus the priority fee.
+ * MetaMask's own estimate can sit under Arbitrum's base fee and the node then
+ * rejects eth_sendRawTransaction before anything is broadcast.
+ */
+export async function commitFeeCap() {
+  const estimated = await client.estimateFeesPerGas({ type: 'eip1559' });
+  const block = await client.getBlock();
+  const base = block.baseFeePerGas ?? 0n;
+  const priority = estimated.maxPriorityFeePerGas;
+  const headroom = base * 2n + priority;
+  return {
+    maxFeePerGas: estimated.maxFeePerGas > headroom ? estimated.maxFeePerGas : headroom,
+    maxPriorityFeePerGas: priority,
+  };
+}
+
 export async function readDungeon(): Promise<Snapshot> {
   if (!deployment.address)
     throw new Error('Deployment is not configured. You can play the practice seed.');
@@ -237,7 +254,10 @@ export async function verify(
     return {
       ...result,
       state: 'reverted',
-      message: 'Transaction reverted. The dungeon may have changed first. Play the new revision.',
+      message:
+        live.revision !== attempt.run.snapshot.revision
+          ? 'Someone changed the dungeon first. Play latest to try the new revision.'
+          : 'The transaction reverted. This attempt did not change the dungeon.',
     };
   const mutations: Mutation[] = [];
   for (const log of receipt.logs) {

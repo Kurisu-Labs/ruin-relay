@@ -63,6 +63,17 @@ test('explicit wallet rejection restores the run and tile without a success clai
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   await expect(page.locator('.success')).toHaveCount(0);
   expect(wallet.requests).toHaveLength(1);
+  await page.reload();
+  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Tile 31:' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeEnabled();
+  await page.getByRole('link', { name: 'History' }).click();
+  await expect(page.locator('#history')).toBeVisible();
 });
 
 test('pending attempts survive reload and status reads never resubmit', async ({ page }) => {

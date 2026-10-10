@@ -58,6 +58,9 @@ export interface Attempt {
   observed: ObservedTransaction[];
   inclusion?: { blockNumber: bigint; blockHash: Hash };
   requestedNonce?: number;
+  /** EIP-1559 cap submitted with this attempt. Absent on attempts saved before fee pinning. */
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
   mutation?: Mutation;
   message?: string;
 }

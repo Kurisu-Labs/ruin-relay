@@ -59,6 +59,11 @@ export async function direct(
   await createPublicClient({ transport: http(config.rpc) }).waitForTransactionReceipt({ hash });
   return hash;
 }
+export interface WalletSendError {
+  code: number;
+  message: string;
+  data?: { code?: number; message?: string };
+}
 export interface WalletControl {
   mode: 'normal' | 'reject' | 'hold' | 'lost';
   account: number;
@@ -67,6 +72,8 @@ export interface WalletControl {
   release?: () => void;
   hash?: Hex;
   overrideNonce?: number;
+  /** Returned from eth_sendTransaction instead of broadcasting. */
+  sendError?: WalletSendError;
 }
 export async function injectWallet(page: Page, account = 0) {
   const accounts: Hex[] = await rpc('eth_accounts');
@@ -87,6 +94,7 @@ export async function injectWallet(page: Page, account = 0) {
       control.requests.push({ method, params });
       if (control.mode === 'reject')
         return { error: { code: 4001, message: 'User rejected request' } };
+      if (control.sendError) return { error: control.sendError };
       if (control.mode === 'hold')
         await new Promise<void>((resolve) => {
           control.release = resolve;
@@ -117,7 +125,10 @@ export async function injectWallet(page: Page, account = 0) {
       request: async (request: unknown) => {
         const response = await (window as any).walletRpc(request);
         if (response.error)
-          throw Object.assign(new Error(response.error.message), { code: response.error.code });
+          throw Object.assign(new Error(response.error.message), {
+            code: response.error.code,
+            data: response.error.data,
+          });
         return response.result;
       },
       on: (name: string, callback: Function) => {
