@@ -26,7 +26,7 @@ test('an open wallet request stays signing and does not offer hash recovery', as
   expect(wallet.requests).toHaveLength(1);
 });
 
-test('reloading while the wallet request is open becomes unknown and keeps the lock', async ({
+test('reloading while the wallet request is open releases it when nothing was broadcast', async ({
   page,
 }) => {
   const wallet = await injectWallet(page);
@@ -36,13 +36,14 @@ test('reloading while the wallet request is open becomes unknown and keeps the l
   await submit(page);
   await expect(page.getByText('COMMIT ATTEMPT · SIGNING')).toBeVisible();
   await page.reload();
-  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
-  await expect(page.getByLabel('Recover with transaction hash')).toBeVisible();
-  await expect(
-    page.getByText('Check your wallet for this transaction.', { exact: false }),
-  ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeDisabled();
+  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+  await expect(page.locator('.transaction')).toContainText('This commit was never broadcast');
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Tile 31:' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   expect(wallet.requests).toHaveLength(1);
   wallet.release?.();
 });

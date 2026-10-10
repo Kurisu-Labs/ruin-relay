@@ -1,4 +1,4 @@
-import { test, expect, injectWallet, open, walk, submit, rpc, direct } from './helpers';
+import { test, expect, injectWallet, open, walk, submit, rpc } from './helpers';
 
 test('speed-up recovery uses verified original metadata when RPC stops returning the original transaction', async ({
   page,
@@ -115,24 +115,31 @@ for (const kind of ['cancellation', 'different action']) {
   });
 }
 
-test('an unrelated or duplicate-payload hash with another nonce does not resolve a lost response', async ({
+test('an unrelated hash does not resolve a lost response that is still in flight', async ({
   page,
 }) => {
   const wallet = await injectWallet(page);
   wallet.mode = 'lost';
+  await rpc('evm_setAutomine', [false]);
   await open(page);
   await walk(page);
   await submit(page);
   await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
-  const wrongHash = await direct(1n, 0x596bfba5156n, 22, 38, 1);
+  const accounts: string[] = await rpc('eth_accounts');
+  const wrongHash = await rpc('eth_sendTransaction', [
+    { from: accounts[1], to: accounts[1], value: '0x0' },
+  ]);
   await page.getByLabel('Recover with transaction hash').fill(wrongHash);
   await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('unrelated or linkage is ambiguous');
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
   await expect(page.locator('.success')).toHaveCount(0);
+  expect(wallet.requests).toHaveLength(1);
+  if (wallet.hash) await rpc('anvil_dropTransaction', [wallet.hash]).catch(() => undefined);
+  await rpc('anvil_dropTransaction', [wrongHash]).catch(() => undefined);
 });
 
-test('closing the signing tab retains the deployment lock across wallet accounts', async ({
+test('closing the signing tab releases a prompt that never broadcast', async ({
   page,
   context,
 }) => {
@@ -146,8 +153,9 @@ test('closing the signing tab retains the deployment lock across wallet accounts
   const other = await context.newPage();
   const secondWallet = await injectWallet(other, 1);
   await open(other);
-  await expect(other.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
-  await expect(other.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  await expect(other.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+  await expect(other.locator('.transaction')).toContainText('This commit was never broadcast');
+  await expect(other.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   expect(secondWallet.requests).toHaveLength(0);
 });
 

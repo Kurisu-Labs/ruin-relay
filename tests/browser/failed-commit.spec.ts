@@ -144,35 +144,30 @@ test('a reverted receipt for another cause releases the lock and survives reload
   expect(wallet.requests).toHaveLength(1);
 });
 
-test('a timeout with no rejection reason stays unknown across reload', async ({ page }) => {
+test('a timeout that never reached the node is released when nothing is in flight', async ({
+  page,
+}) => {
   const wallet = await injectWallet(page);
   wallet.sendError = { code: -32603, message: 'Request timed out' };
   await open(page);
   await walk(page);
   await submit(page);
-  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
+  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+  await expect(page.locator('.transaction')).toContainText('This commit was never broadcast');
+  await expect(page.getByRole('alert')).toContainText('could not be verified');
   await expect(page.getByRole('button', { name: 'Switch to Arbitrum Sepolia' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Commit one change' })).toBeDisabled();
-  await expect(page.getByLabel('Recover with transaction hash')).toBeEnabled();
-  await expect(page.getByRole('button', { name: 'Retry status', exact: true })).toBeEnabled();
-  await expect(page.getByRole('button', { name: 'Refresh status', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Tile 31:' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await page.getByRole('link', { name: 'History' }).click();
   await expect(page.locator('#history')).toBeVisible();
-  const accounts: string[] = await rpc('eth_accounts');
-  const unrelated = await rpc('eth_sendTransaction', [
-    { from: accounts[1], to: accounts[1], value: '0x0' },
-  ]);
-  await page.getByLabel('Recover with transaction hash').fill(unrelated);
-  await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('unrelated or linkage is ambiguous');
-  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
   await page.reload();
-  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
-  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
-  await expect(page.getByLabel('Recover with transaction hash')).toBeEnabled();
+  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   expect(wallet.requests).toHaveLength(1);
   expect(wallet.hash).toBeUndefined();
 });

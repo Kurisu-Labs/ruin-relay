@@ -352,10 +352,10 @@ export class Relay {
         args: [run.snapshot.revision, pack(run.path), run.path.length, tile],
         account,
       });
-      const requestedNonce = await client.getTransactionCount({
-        address: account,
-        blockTag: 'pending',
-      });
+      const [pendingNonce, latestNonce] = await Promise.all([
+        client.getTransactionCount({ address: account, blockTag: 'pending' }),
+        client.getTransactionCount({ address: account, blockTag: 'latest' }),
+      ]);
       const fees = await commitFeeCap();
       attempt = {
         id: crypto.randomUUID(),
@@ -367,11 +367,16 @@ export class Relay {
         state: 'signing',
         hashes: [],
         observed: [],
-        requestedNonce,
+        requestedNonce: pendingNonce,
+        nonceAtSign: { pending: pendingNonce, latest: latestNonce },
         maxFeePerGas: fees.maxFeePerGas,
         maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
         message: SIGNING_STATUS,
       };
+      if (!(await this.journal.beginInflight()))
+        throw new Error(
+          'An edit is already in progress for this dungeon. Check its status before submitting another.',
+        );
       const claimed = await this.journal.claim(attempt, live);
       this.signingId = attempt.id;
       this.requestInFlight = true;
@@ -391,7 +396,7 @@ export class Relay {
         value: 0n,
         data: attempt.calldata,
         gas: prepared.gas,
-        nonce: requestedNonce,
+        nonce: pendingNonce,
         maxFeePerGas: fees.maxFeePerGas,
         maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       });
@@ -436,6 +441,7 @@ export class Relay {
         });
       this.set({ error: explain(error) });
     } finally {
+      this.journal.endInflight();
       this.signingId = undefined;
       this.requestInFlight = false;
       this.set({ busy: false });

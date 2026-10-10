@@ -1,7 +1,15 @@
-import { createPublicClient, decodeEventLog, encodeFunctionData, http, type Hash } from 'viem';
+import {
+  createPublicClient,
+  decodeEventLog,
+  encodeFunctionData,
+  http,
+  type Address,
+  type Hash,
+} from 'viem';
 import { waitForTransactionReceipt } from 'viem/actions';
 import { abi } from '../config/abi';
 import { chain, deployment } from '../config/deployment';
+import { anotherDocumentIsSigning } from './inflight';
 import fixture from '../../reference/fixtures.json';
 import {
   SIGNING_STATUS,
@@ -168,6 +176,147 @@ export function observeReceipt(
   });
 }
 
+const NEVER_BROADCAST = 'This commit was never broadcast. Your run and edit are preserved.';
+const NEVER_APPLIED =
+  'Your earlier commit was never applied, and the dungeon has moved on. Play latest to try again.';
+const HASHLESS_LOCKED =
+  'This commit has no transaction hash yet. It stays locked until the dungeon moves on or you recover a transaction hash. Retry status only rechecks.';
+
+function lockedHashless(attempt: Attempt): Attempt {
+  return { ...attempt, state: 'unknown', mutation: undefined, message: HASHLESS_LOCKED };
+}
+
+/** Included-nonce cursor from before signing. Older journals may only have stored the pending count. */
+function recordedIncludedNonce(attempt: Attempt) {
+  return attempt.nonceAtSign?.latest ?? attempt.requestedNonce;
+}
+
+function sameMutation(attempt: Attempt, event: Mutation) {
+  return (
+    event.editor.toLowerCase() === attempt.account.toLowerCase() &&
+    event.tileIndex === attempt.tile &&
+    event.revision === attempt.run.snapshot.revision + 1n &&
+    event.wallMask === attempt.expectedWalls &&
+    event.becameWall === ((attempt.expectedWalls & (1n << BigInt(attempt.tile))) !== 0n)
+  );
+}
+
+async function logsForRevision(
+  address: Address,
+  revision: bigint,
+  fromBlock: bigint,
+  latest: bigint,
+) {
+  const query = (from: bigint, to: bigint) =>
+    client.getContractEvents({
+      address,
+      abi,
+      eventName: 'DungeonMutated',
+      args: { revision },
+      fromBlock: from,
+      toBlock: to,
+      strict: true,
+    });
+  try {
+    return await query(fromBlock, latest);
+  } catch (error) {
+    // A wide eth_getLogs can fail closed. A short deployment can still be walked.
+    // Anything we cannot finish stays locked: a partial scan is not proof of absence.
+    const span = latest - fromBlock;
+    if (span > 30_000n) throw error;
+    const collected = [];
+    for (let from = fromBlock; from <= latest; from += 2_000n) {
+      const to = from + 1_999n > latest ? latest : from + 1_999n;
+      collected.push(...(await query(from, to)));
+    }
+    return collected;
+  }
+}
+
+async function mutationsAt(address: Address, revision: bigint): Promise<Mutation[]> {
+  if (deployment.block === undefined) throw new Error('Deployment block is not configured.');
+  const latest = await client.getBlockNumber();
+  const logs = await logsForRevision(address, revision, deployment.block, latest);
+  const found: Mutation[] = [];
+  const canonical = new Map<bigint, Hash>();
+  for (const log of logs) {
+    if (
+      log.removed ||
+      log.blockNumber === null ||
+      log.blockHash === null ||
+      log.transactionHash === null ||
+      log.logIndex === null
+    )
+      continue;
+    if (!canonical.has(log.blockNumber))
+      canonical.set(
+        log.blockNumber,
+        (await client.getBlock({ blockNumber: log.blockNumber })).hash,
+      );
+    if (canonical.get(log.blockNumber) !== log.blockHash) continue;
+    found.push({
+      ...log.args,
+      hash: log.transactionHash,
+      blockNumber: log.blockNumber,
+      blockHash: log.blockHash,
+      logIndex: log.logIndex,
+    });
+  }
+  return found;
+}
+
+async function adoptObservedMutation(
+  attempt: Attempt,
+  event: Mutation,
+): Promise<Attempt | undefined> {
+  const observed = await transaction(event.hash, 'wallet-response');
+  if (!sameAction(attempt, observed)) return undefined;
+  return {
+    ...attempt,
+    originalHash: event.hash,
+    activeHash: event.hash,
+    hashes: [...new Set([...attempt.hashes, event.hash])],
+    observed: [...attempt.observed.filter((item) => item.hash !== event.hash), observed],
+  };
+}
+
+/**
+ * A hashless attempt can end only from reads.
+ * The contract accepts at most one mutation per revision, so a late copy cannot
+ * double-mutate: the worst case is a later commit that reverts StaleRevision.
+ * Journals do not store a creation time, so there is no cheap bound for an
+ * included transaction after the attempt was created. Legacy journals stop at
+ * pending==latest and the absence of a snapshot+1 event.
+ * Any failed read throws and the caller keeps the attempt locked.
+ */
+async function settleHashless(attempt: Attempt, live: Snapshot): Promise<Attempt> {
+  const snapshotRevision = attempt.run.snapshot.revision;
+  if (live.revision < snapshotRevision) return lockedHashless(attempt);
+  const events = await mutationsAt(attempt.run.snapshot.address, snapshotRevision + 1n);
+  const own = events.filter((event) => sameMutation(attempt, event));
+  if (own.length > 1) return lockedHashless(attempt);
+  if (own.length === 1) {
+    const adopted = await adoptObservedMutation(attempt, own[0]);
+    if (adopted) return verify(adopted, live);
+  }
+  if (live.revision > snapshotRevision) {
+    // A moved revision with no visible snapshot+1 event is an incomplete read.
+    // A visible event that is not this attempt's action cannot be applied later.
+    if (events.length === 0) return lockedHashless(attempt);
+    return { ...attempt, state: 'rejected', mutation: undefined, message: NEVER_APPLIED };
+  }
+  if (events.length > 0) return lockedHashless(attempt);
+  const [pending, latest] = await Promise.all([
+    client.getTransactionCount({ address: attempt.account, blockTag: 'pending' }),
+    client.getTransactionCount({ address: attempt.account, blockTag: 'latest' }),
+  ]);
+  const recorded = recordedIncludedNonce(attempt);
+  const nothingIncluded = recorded === undefined || latest === recorded;
+  if (pending === latest && nothingIncluded)
+    return { ...attempt, state: 'rejected', mutation: undefined, message: NEVER_BROADCAST };
+  return lockedHashless(attempt);
+}
+
 export async function verify(
   attempt: Attempt,
   live: Snapshot,
@@ -184,11 +333,20 @@ export async function verify(
     }
   }
   if (!attempt.activeHash) {
-    // An open wallet request has no hash yet. Unknown is for a lost response or
-    // an outcome that cannot be established, including a signing attempt restored
-    // after this page is no longer waiting on the wallet.
+    // An open wallet request on this page has no hash yet. Keep it signing.
+    // A restored hashless attempt is settled from chain reads: a moved revision,
+    // or nonce evidence that nothing was sent. A failed read stays locked.
     if (preserveSigning && attempt.state === 'signing')
       return { ...result, state: 'signing', message: SIGNING_STATUS };
+    if (attempt.hashes.length === 0 && !attempt.originalHash) {
+      // A live wallet prompt has not broadcast yet, so pending==latest is not
+      // evidence. The document that opened it holds the inflight lock.
+      if (await anotherDocumentIsSigning())
+        return attempt.state === 'signing'
+          ? { ...result, state: 'signing', message: SIGNING_STATUS }
+          : lockedHashless(result);
+      return settleHashless(result, live);
+    }
     return {
       ...result,
       state: 'unknown',

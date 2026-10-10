@@ -11,6 +11,7 @@ export const test = base.extend<{ resetChain: void }>({
       try {
         await use();
       } finally {
+        await rpc('anvil_dropAllTransactions').catch(() => undefined);
         await rpc('evm_setAutomine', [true]);
         await rpc('evm_revert', [snapshot]);
       }

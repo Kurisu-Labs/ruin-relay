@@ -58,6 +58,12 @@ export interface Attempt {
   observed: ObservedTransaction[];
   inclusion?: { blockNumber: bigint; blockHash: Hash };
   requestedNonce?: number;
+  /**
+   * Account nonce captured before the signing request.
+   * `latest` is the next included nonce; `pending` includes the txpool.
+   * Absent on journals saved before this field existed.
+   */
+  nonceAtSign?: { pending: number; latest: number };
   /** EIP-1559 cap submitted with this attempt. Absent on attempts saved before fee pinning. */
   maxFeePerGas?: bigint;
   maxPriorityFeePerGas?: bigint;

@@ -95,7 +95,7 @@ test('pending attempts survive reload and status reads never resubmit', async ({
   expect(wallet.requests).toHaveLength(1);
 });
 
-test('a lost wallet response without original linkage remains locked after manual hash recovery', async ({
+test('a lost wallet response is confirmed when its mined event matches the attempt', async ({
   page,
 }) => {
   const wallet = await injectWallet(page);
@@ -103,13 +103,12 @@ test('a lost wallet response without original linkage remains locked after manua
   await open(page);
   await walk(page);
   await submit(page);
-  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  await expect(page.getByText('COMMIT ATTEMPT · CONFIRMED')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   await page.reload();
-  await page.getByLabel('Recover with transaction hash').fill(wallet.hash!);
-  await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('unrelated or linkage is ambiguous');
-  await expect(page.locator('.success')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   expect(wallet.requests).toHaveLength(1);
 });
 

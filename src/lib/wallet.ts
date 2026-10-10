@@ -78,7 +78,9 @@ function facts(error: unknown): ErrorFacts {
 /**
  * A timeout or a lost wallet response is not proof that the node rejected the
  * transaction. "already known" means a transaction with this payload is already
- * in the pool. Those stay unresolved.
+ * in the pool. The error itself leaves the attempt unresolved; a later nonce
+ * or event read can still end a hashless attempt when the chain shows it
+ * cannot land.
  */
 const AMBIGUOUS =
   /timed out|timeout|took too long|response lost|failed to fetch|network request failed|socket hang up|econnreset|already known|transaction already imported/i;
@@ -108,7 +110,8 @@ function userRejected(info: ErrorFacts) {
 /**
  * True only when this signing request was refused before a transaction was
  * accepted. Generic timeouts, lost responses, and internal errors with no
- * rejection reason return false so the attempt stays unknown.
+ * rejection reason return false. That is not a time-based unlock: chain
+ * evidence in verify() is a separate read.
  */
 export function notBroadcast(error: unknown) {
   const info = facts(error);
