@@ -28,11 +28,20 @@ test('wallet-free escape opens a one-tile editor with a bounded solvability prev
       { U: 'ArrowUp', R: 'ArrowRight', D: 'ArrowDown', L: 'ArrowLeft' }[direction]!,
     );
   await expect(page.getByText('Dungeon Escaped!')).toBeVisible();
+  await expect(page.locator('#commit-help')).toHaveText(
+    'Choose a highlighted floor to add a wall, or a highlighted wall to remove it.',
+  );
   await page.getByRole('button', { name: 'Tile 8:' }).click();
   await expect(page.getByText('That edit blocks every route to the exit.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Commit one change' })).toBeDisabled();
+  await expect(page.locator('#commit-help')).toHaveText(
+    'Choose a different tile. At least one route from START to EXIT must stay open.',
+  );
   await page.getByRole('button', { name: 'Tile 31:' }).click();
   await expect(page.getByText('Your edit keeps an escape route open.')).toBeVisible();
+  await expect(page.getByText('Preview only · your change has not been saved.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Commit one change' })).toBeEnabled();
+  await expect(page.locator('#commit-help')).toContainText('Ready to review.');
   await page.getByRole('button', { name: 'Restart', exact: true }).click();
   await expect(page.getByText('Steps 0 / 96')).toBeVisible();
 });

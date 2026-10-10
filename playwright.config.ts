@@ -3,6 +3,7 @@ export default defineConfig({
   testDir: './tests/browser',
   timeout: 45_000,
   workers: 1,
+  reporter: [['list'], ['json', { outputFile: 'test-results/results.json' }]],
   expect: { timeout: 10_000 },
   use: {
     baseURL: 'http://127.0.0.1:4173',
