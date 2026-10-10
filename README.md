@@ -8,7 +8,20 @@ The application and local test harness are implemented. The official Arbitrum Se
 
 ## Run locally
 
-Use Node.js 22.12+ (tested with 26.11.1) and npm. The lockfile pins React, Phaser 3, viem/wagmi, Vite, Foundry 1.7.1, and the test tools. Foundry downloads Solidity 0.8.24 on first use.
+Use Node.js 22.12+ and npm (Phaser 4 work checked with Node 22.23.3). The lockfile pins React, Phaser 4.2.1, viem/wagmi, Vite, Foundry 1.7.1, and the test tools. Foundry downloads Solidity 0.8.24 on first use.
+
+For a quick visual preview without a wallet or local blockchain:
+
+```sh
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173/play. Without active deployment metadata this uses the practice seed; no transaction can be submitted. The dungeon uses a close, screen-aligned camera that follows the adventurer through painted ruin assets. W/↑ moves up, D/→ right, S/↓ down, and A/← left. The full map opens only after reaching EXIT, for editing. Sound is off by default; reduced motion follows the operating system unless overridden. Tile numbers are optional, and the DOM tile editor remains available after escape.
+
+After EXIT, select a highlighted **floor** to preview a wall, or a highlighted **wall** to preview floor. Dim tiles are fixed. Exactly one tile can change and an escape route must remain. The preview is not saved until a transaction is confirmed. **Commit one change** connects the wallet and prepares a review; **Sign and submit edit** is a separate action. The explanation below Commit identifies why it is disabled. Practice mode supports previews only; connecting a wallet does not enable saving on a practice board.
+
+For the full local blockchain rehearsal and browser tests:
 
 ```sh
 npm ci
@@ -40,6 +53,10 @@ The fixture is `reference/fixtures.json`: revision 0 → tile 31 → `0xd05b8279
 
 ## Sepolia setup
 
+To connect the frontend to the existing official deployment, copy `.env.example` to `.env.local` and start or restart `npm run dev`. The header should show **Arbitrum Sepolia**. After escaping, select a valid editable tile and choose **Commit one change** to connect the wallet and review the transaction. The wallet needs Arbitrum Sepolia test ETH for gas; **Sign and submit edit** sends the transaction after review.
+
+For an operator deploying a new contract:
+
 ```sh
 node scripts/setup-wallets.mjs
 node scripts/sepolia.mjs balance
@@ -59,7 +76,7 @@ For a CLI fixture rehearsal on a fresh deployment, `node scripts/sepolia.mjs fix
 
 ## Recovery and integrity
 
-React owns the run, edit draft, and fixed commit attempt; Phaser renders and captures focused keyboard input. Polling updates the live dungeon without replacing a run snapshot. The client simulates and estimates gas before showing a separate Sign and submit action, then repeats state/account/network checks before requesting the signature.
+React owns the run, edit draft, and fixed commit attempt; Phaser renders the dungeon and following camera; the React host captures focused keyboard intent synchronously. Animation never delays accepted domain moves. Polling updates the live dungeon without replacing a run snapshot. The client simulates and estimates gas before showing a separate Sign and submit action, then repeats state/account/network checks before requesting the signature.
 
 An origin/profile/deployment-scoped Web Lock protects the durable local journal across all accounts and tabs. The journal is saved before signing. A known hash stays tracked in memory if a later storage write fails. Pending, unknown, and syncing attempts lock edits, Restart, Play latest, and new commits. History, status reads, and Recover with transaction hash stay available. Retry status and manual hash recovery perform reads only. Recovery of a supplied hash requires the original returned hash or a previously observed original sender and nonce. A requested nonce is recorded for diagnostics, but is not proof of the broadcast nonce: wallets may change it. Matching payload alone does not link a different hash. Before the signing request, the journal also records the account's pending and latest nonce. On load and on Retry status, a hashless unresolved attempt can end from chain evidence alone. A failed nonce or log read leaves it locked. Retain wallet/explorer evidence; the app does not guess from a timeout or a lost response.
 
@@ -77,7 +94,7 @@ The contract has no owner, proxy, admin mutation, external call, asset custody, 
 
 Testnet only. No tokens, NFTs, or monetary rewards. Public solutions can be reused; scripts can solve the puzzle. Wallet addresses do not establish unique humans or manual play. UI confirmation does not mean Ethereum L1 finality. Mobile layout supports spectators; touch controls are deferred. No authoritative game backend or PII analytics is used. Business and retention hypotheses remain unvalidated.
 
-MIT-licensed project code; geometric dungeon artwork is original code. React, Phaser, viem, wagmi, Vite, Vitest, Playwright, and Foundry retain their respective upstream licenses. Typography uses Google Fonts DM Sans and Space Grotesk (SIL Open Font License), with system fallbacks.
+MIT-licensed project code and modular dungeon artwork. The generated environment and four-direction adventurer atlases, prompts, manifests and credits are in `public/assets/game/v2/`; original procedural effects remain in `v1/`. Run `npm run assets:game` to rebuild v2 atlas metadata from the included, unmodified PNGs (Python 3 and Pillow required only for regeneration). Engine migration and local validation are recorded in [gameplan](gameplan/VALIDATION_RECORD.md). React, Phaser, viem, wagmi, Vite, Vitest, Playwright, and Foundry retain their respective upstream licenses. Typography uses Google Fonts DM Sans and Space Grotesk (SIL Open Font License), with system fallbacks.
 
 Prior work: the PRD, ADRs, glossary, interface, and fixtures existed before this implementation; the application, contract, and executable harness were added for issue [#1](https://github.com/Kurisu-Labs/ruin-relay/issues/1). Record the actual development window and completed release evidence before submission. Product demo target: ≤3 minutes; separate presentation target: 1–3 minutes. Check current competition rules before submitting.
 
