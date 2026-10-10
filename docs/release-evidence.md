@@ -29,7 +29,7 @@ Provided by the operator on 10 October 2026 (Asia/Jakarta), with balances read f
 | Deployer / player A | `0x37714b787066ce967d027B752D045e13b8b64A84` | 0        |
 | Player B            | `0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9` | 0        |
 
-Funding and a browser-wallet or local-keystore signing setup are pending. Public addresses alone do not enable deployment or mutation signing. These addresses are not deployment or mutation evidence.
+The operator reports an existing Firefox wallet extension. Firefox is unavailable through this session's browser-control connection, so wallet approvals require operator interaction. The real A/B demonstration requires separate Firefox profiles. Funding is still pending, and the CLI signer remains configured for the generated local wallets. These addresses are not deployment or mutation evidence.
 
 ### Generated local wallets
 
