@@ -30,3 +30,11 @@ These are extracts from `../ADR.md`; the master governs if an extract and later 
 - [ADR-026 — Pengukuran dan data minimal](ADR-026.md)
 - [ADR-027 — Mobile friendly read-only, desktop-first controls](ADR-027.md)
 - [ADR-028 — Perubahan aturan gameplay harus versioned](ADR-028.md)
+
+## Amendment presentasi game
+
+ADR-014 kini diamendemen oleh [ADR-033](../docs/adr/0033-phaser4-renderer.md), [ADR-034](../docs/adr/0034-isometric-presentation.md), [ADR-035](../docs/adr/0035-authoritative-run-and-animation.md), [ADR-036](../docs/adr/0036-modular-asset-pipeline.md), dan [ADR-037](../docs/adr/0037-scene-bridge-and-lifecycle.md).
+
+[ADR-038](../docs/adr/0038-close-top-down-camera.md) mengganti ADR-034 dengan kamera dekat lurus berdasarkan feedback pengguna, serta memperbarui aset aktif menjadi v2.
+
+[ADR-039](../docs/adr/0039-escape-only-overview.md) menggantikan overview manual dan ukuran view ADR-038: overview hanya untuk editor setelah local escape, kamera bermain lebih dekat, dan panel edit menjelaskan syarat Commit.

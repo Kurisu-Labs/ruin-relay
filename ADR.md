@@ -10,6 +10,10 @@
 
 [ADR-031 — Pemulihan commit berdasarkan bukti hasil](docs/adr/0031-commit-recovery.md) memperinci recovery, replacement, dan reorg pada ADR-017/023; aturan operasional ada di §C.7. [ADR-032 — Bukti untuk commit attempt tanpa hash](docs/adr/0032-hashless-attempt.md) menambah pengecualian read-only pada attempt yang belum punya hash.
 
+[ADR-033](docs/adr/0033-phaser4-renderer.md) mengganti engine ADR-014 menjadi Phaser 4. Presentasi lurus dengan kamera dekat mengikuti [ADR-038](docs/adr/0038-close-top-down-camera.md), yang menggantikan proyeksi isometrik [ADR-034](docs/adr/0034-isometric-presentation.md) berdasarkan feedback pengguna. Pemisahan animasi, aset modular dan lifecycle bridge mengikuti [ADR-035](docs/adr/0035-authoritative-run-and-animation.md), [ADR-036](docs/adr/0036-modular-asset-pipeline.md), dan [ADR-037](docs/adr/0037-scene-bridge-and-lifecycle.md). Status pengujian implementasi dicatat terpisah dari penerimaan keputusan.
+
+[ADR-039](docs/adr/0039-escape-only-overview.md) menggantikan overview manual dan ukuran view pada ADR-038: peta penuh hanya muncul setelah local escape untuk editor, kamera bermain lebih dekat, dan alasan Commit nonaktif dijelaskan di panel edit.
+
 ## A. Ringkasan arsitektur terkunci
 
 **Keputusan inti:** gunakan satu kontrak Solidity sebagai canonical state + validator untuk satu puzzle dungeon 7×7. Pergerakan karakter terjadi lokal di Phaser. Setelah pemain mencapai EXIT pada snapshot revisi tertentu, UI meminta wallet mengirim satu transaksi **solve-and-edit**. Kontrak memvalidasi path pada peta lama, mengganti satu bit tile, menjalankan BFS pada peta baru, memperbarui revisi, dan mengirim event. Tidak diperlukan backend real-time atau token.
@@ -166,7 +170,7 @@
 
 **Status:** Accepted (MVP)  
 **Konteks:** Pemain perlu animasi tile sederhana dan UI wallet yang konsisten.  
-**Keputusan:** Phaser 3 + TypeScript untuk map/player/keystrokes; React untuk landing, victory/edit overlay, tx state, history. Buat satu adapter event supaya Phaser tidak menyimpan state chain kedua.  
+**Keputusan (diamendemen ADR-033–037):** Phaser 4 + TypeScript untuk presentasi map/player; host React menangkap focused keyboard intent dan mengelola landing, editor, tx state, history. Satu bridge memberi frame dan callback spesifik supaya Phaser tidak menyimpan state chain kedua.\
 **Alternatif:** HTML canvas murni, Unity/WebGL, React grid DOM penuh.  
 **Konsekuensi:** tambahan library tetapi produktif untuk game feel; integration boundary perlu dijaga.  
 **Acceptance (diamendemen ADR-029):** pemilihan snapshot untuk run memanggil `game.loadBoard(snapshot)` secara atomik. Refetch live dungeon tidak mengganti run aktif; lihat [ADR-029](docs/adr/0029-frozen-run-snapshot.md).
