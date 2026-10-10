@@ -64,7 +64,27 @@ export class Journal {
     const raw = localStorage.getItem(key);
     const saved = raw ? parse(raw) : [];
     this.cached = saved
-      .map((attempt) => this.unsaved.get(attempt.id) ?? attempt)
+      .map((attempt) => {
+        const memory = this.unsaved.get(attempt.id);
+        if (!memory) return attempt;
+        const hashes = [...new Set([...attempt.hashes, ...memory.hashes])];
+        return {
+          ...memory,
+          ...attempt,
+          originalHash: attempt.originalHash ?? memory.originalHash,
+          activeHash: attempt.activeHash ?? memory.activeHash,
+          hashes,
+          observed: [
+            ...new Map(
+              [...memory.observed, ...attempt.observed].map((tx) => [tx.hash, tx]),
+            ).values(),
+          ],
+          state:
+            memory.state === 'rejected' && hashes.length === 0
+              ? ('rejected' as const)
+              : attempt.state,
+        };
+      })
       .concat([...this.unsaved.values()].filter((a) => !saved.some((s) => s.id === a.id)));
     return this.cached;
   }
