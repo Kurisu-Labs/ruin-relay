@@ -3,7 +3,7 @@ import { formatEther } from 'viem';
 import { configured, deployment } from './config/deployment';
 import { Board } from './game/Board';
 import { Relay } from './lib/relay';
-import { sameDungeon, unresolved } from './lib/model';
+import { SIGNING_STATUS, ownConfirmedRevision, sameDungeon, unresolved } from './lib/model';
 import { editable, EXIT, MAX_MOVES, preview, wallAt } from './lib/rules';
 
 const relay = new Relay();
@@ -38,6 +38,7 @@ export default function App() {
   const latestAttempt = active ?? state.attempts.at(-1);
   const escaped = run?.position === EXIT;
   const stale = Boolean(run && live && !sameDungeon(run.snapshot, live));
+  const ownRevision = run && live ? ownConfirmedRevision(run, live, state.attempts) : undefined;
   const draft =
     run && tile !== undefined
       ? preview(run.snapshot.walls, run.snapshot.editableMask, tile)
@@ -148,7 +149,13 @@ export default function App() {
               {run && run.path.length >= MAX_MOVES && !escaped && (
                 <p role="status">Move limit reached. Restart to try again.</p>
               )}
-              {stale && (
+              {stale && ownRevision !== undefined && (
+                <p className="notice" role="status">
+                  Your edit created revision #{ownRevision.toString()}. Play latest to try the new
+                  dungeon.
+                </p>
+              )}
+              {stale && ownRevision === undefined && (
                 <p className="notice">
                   Someone changed the dungeon first. Finish this run as practice, or play the new
                   revision. Commit is disabled.
@@ -283,7 +290,7 @@ export default function App() {
               <p role="status">
                 {latestAttempt.message ||
                   (latestAttempt.state === 'signing'
-                    ? 'Waiting for your wallet signature.'
+                    ? SIGNING_STATUS
                     : 'Still checking your transaction.')}
               </p>
               {latestAttempt.hashes.map((hash) => (
@@ -292,28 +299,31 @@ export default function App() {
               {active && (
                 <>
                   <p>
-                    The run and edit are locked until this attempt has a verified outcome. Check
-                    your wallet activity or explorer; Retry status performs reads only.
+                    {active.state === 'signing'
+                      ? 'The run and edit stay locked until you approve or reject this wallet request. Retry status only rechecks.'
+                      : 'The run and edit are locked until this attempt has a verified outcome. Check your wallet activity or explorer; Retry status performs reads only.'}
                   </p>
                   <button onClick={() => void relay.refresh()}>Retry status</button>
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      void relay.recover(recoveryHash.trim());
-                    }}
-                  >
-                    <label htmlFor="recovery">Recover with transaction hash</label>
-                    <div className="recovery">
-                      <input
-                        id="recovery"
-                        value={recoveryHash}
-                        onChange={(event) => setRecoveryHash(event.target.value)}
-                        placeholder="0x…"
-                        autoComplete="off"
-                      />
-                      <button type="submit">Verify hash</button>
-                    </div>
-                  </form>
+                  {active.state !== 'signing' && (
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        void relay.recover(recoveryHash.trim());
+                      }}
+                    >
+                      <label htmlFor="recovery">Recover with transaction hash</label>
+                      <div className="recovery">
+                        <input
+                          id="recovery"
+                          value={recoveryHash}
+                          onChange={(event) => setRecoveryHash(event.target.value)}
+                          placeholder="0x…"
+                          autoComplete="off"
+                        />
+                        <button type="submit">Verify hash</button>
+                      </div>
+                    </form>
+                  )}
                 </>
               )}
             </section>

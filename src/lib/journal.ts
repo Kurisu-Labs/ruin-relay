@@ -1,7 +1,7 @@
 import { configured, deployment } from '../config/deployment';
 import { calldata, verify } from './chain';
 import { pack, preview, validatePath } from './rules';
-import { unresolved, type Attempt, type Snapshot } from './model';
+import { SIGNING_STATUS, unresolved, type Attempt, type Snapshot } from './model';
 
 const key = `ruin-relay:v1:${deployment.chainId}:${deployment.address?.toLowerCase() ?? 'practice'}`;
 const serialize = (value: unknown) =>
@@ -111,20 +111,26 @@ export class Journal {
     }
     this.cached = attempts;
   }
-  async sync(live: Snapshot): Promise<Attempt[]> {
+  async sync(live: Snapshot, activeSigningId?: string): Promise<Attempt[]> {
     const coordinated = this.available;
     const check = async () => {
       const checked: Attempt[] = [];
       for (const attempt of this.read()) {
+        const openSigning =
+          attempt.id === activeSigningId && attempt.state === 'signing' && !attempt.activeHash;
         try {
-          checked.push(await verify(attempt, live));
+          checked.push(await verify(attempt, live, openSigning));
         } catch {
-          checked.push({
-            ...attempt,
-            state: 'unknown',
-            mutation: undefined,
-            message: 'Observation unavailable. Still checking your transaction.',
-          });
+          checked.push(
+            openSigning
+              ? { ...attempt, state: 'signing', message: SIGNING_STATUS }
+              : {
+                  ...attempt,
+                  state: 'unknown',
+                  mutation: undefined,
+                  message: 'Observation unavailable. Still checking your transaction.',
+                },
+          );
         }
       }
       if (coordinated && checked.length) this.save(checked);

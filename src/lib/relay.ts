@@ -14,6 +14,7 @@ import {
 } from './chain';
 import { Journal } from './journal';
 import {
+  SIGNING_STATUS,
   sameDungeon,
   unresolved,
   type Attempt,
@@ -63,9 +64,13 @@ export class Relay {
   private journal = new Journal();
   private listeners = new Set<() => void>();
   private refreshing?: Promise<void>;
+  private queuedRefresh?: Promise<void>;
   private requestInFlight = false;
+  private signingId?: string;
   private watching = new Set<string>();
   private historyTask?: Promise<void>;
+  private historySnapshot?: Snapshot;
+  private historyStale = false;
   state: View = {
     online: false,
     busy: false,
@@ -121,19 +126,68 @@ export class Relay {
     }
     await this.refresh();
   }
-  refresh = () => {
-    if (this.refreshing || !configured) return this.refreshing ?? Promise.resolve();
+  refresh = (): Promise<void> => {
+    if (!configured) return Promise.resolve();
+    if (this.refreshing) {
+      this.queuedRefresh ??= this.refreshing.then(() => {
+        this.queuedRefresh = undefined;
+        return this.refresh();
+      });
+      return this.queuedRefresh;
+    }
     this.refreshing = this.refreshNow().finally(() => {
       this.refreshing = undefined;
     });
     return this.refreshing;
   };
+  private keepOpenSigning(attempts: Attempt[]) {
+    if (!this.signingId) return attempts;
+    const id = this.signingId;
+    const local = this.state.attempts.find((attempt) => attempt.id === id);
+    const synced = attempts.find((attempt) => attempt.id === id);
+    if (local && local.state !== 'signing') {
+      if (!synced || (synced.state === 'signing' && !synced.activeHash))
+        return [...attempts.filter((attempt) => attempt.id !== id), local];
+      return attempts;
+    }
+    const source = synced ?? local;
+    if (!source || source.activeHash) return attempts;
+    return [
+      ...attempts.filter((attempt) => attempt.id !== id),
+      { ...source, state: 'signing' as const, mutation: undefined, message: SIGNING_STATUS },
+    ];
+  }
+  private loadHistory(live: Snapshot) {
+    if (this.historyTask) {
+      if (this.historySnapshot && !sameDungeon(this.historySnapshot, live))
+        this.historyStale = true;
+      return;
+    }
+    this.historySnapshot = live;
+    this.historyTask = readHistory(live)
+      .then((history) => {
+        // A newer head block is not a new dungeon. Keep the read when the
+        // revision and walls still match, and refetch only when they do not.
+        if (this.state.live && sameDungeon(this.state.live, live))
+          this.set({ history, historyError: false });
+        else this.historyStale = true;
+      })
+      .catch(() => this.set({ history: [], historyError: true }))
+      .finally(() => {
+        this.historyTask = undefined;
+        const next = this.state.live;
+        if (this.historyStale && next) {
+          this.historyStale = false;
+          this.loadHistory(next);
+        }
+      });
+  }
   private async refreshNow() {
     try {
       const live = await readDungeon();
       let attempts = this.state.attempts;
       try {
-        attempts = await this.journal.sync(live);
+        attempts = await this.journal.sync(live, this.signingId);
         this.set({ recoveryError: undefined });
       } catch {
         this.set({
@@ -142,6 +196,7 @@ export class Relay {
         });
         attempts = invalidateObservations(attempts);
       }
+      attempts = this.keepOpenSigning(attempts);
       const restored = attempts.find(unresolved);
       this.set({
         live,
@@ -158,25 +213,17 @@ export class Relay {
       });
       for (const attempt of attempts)
         if (unresolved(attempt) && attempt.activeHash) this.watch(attempt.activeHash, attempt.id);
-      if (!this.historyTask) {
-        this.historyTask = readHistory(live)
-          .then((history) => {
-            if (this.state.live?.blockHash === live.blockHash)
-              this.set({ history, historyError: false });
-          })
-          .catch(() => this.set({ history: [], historyError: true }))
-          .finally(() => {
-            this.historyTask = undefined;
-          });
-      }
+      this.loadHistory(live);
     } catch {
       this.set({
         online: false,
         history: [],
         historyError: true,
-        attempts: invalidateObservations(
-          this.state.attempts,
-          'Observation unavailable. Still checking your transaction.',
+        attempts: this.keepOpenSigning(
+          invalidateObservations(
+            this.state.attempts,
+            'Observation unavailable. Still checking your transaction.',
+          ),
         ),
       });
     }
@@ -315,8 +362,12 @@ export class Relay {
         hashes: [],
         observed: [],
         requestedNonce,
+        message: SIGNING_STATUS,
       };
-      this.set({ attempts: await this.journal.claim(attempt, live), prepared: undefined });
+      const claimed = await this.journal.claim(attempt, live);
+      this.signingId = attempt.id;
+      this.requestInFlight = true;
+      this.set({ attempts: claimed, prepared: undefined });
       // Recheck immediately before the request; subsequent wallet events cannot change this attempt.
       const [activeAccount] = await connected.getAddresses();
       if (
@@ -325,7 +376,6 @@ export class Relay {
       )
         throw new Error('Account or network changed before signing');
       issued = true;
-      this.requestInFlight = true;
       const hash = await connected.sendTransaction({
         account,
         chain: connected.chain,
@@ -374,6 +424,7 @@ export class Relay {
         });
       this.set({ error: explain(error) });
     } finally {
+      this.signingId = undefined;
       this.requestInFlight = false;
       this.set({ busy: false });
       await this.refresh();
