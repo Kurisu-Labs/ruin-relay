@@ -42,7 +42,7 @@ Local private keys are excluded from Git and blocked by the development server. 
 | Product demo ≤3 minutes                 | [English script ready](demo-script.md); recording pending                                                    |
 | Presentation 2–3 minutes                | [English script ready](presentation.md); recording pending                                                   |
 
-The [complete test log](test-results.log) records a successful `npm test` exit: 11 contract tests, 6 rules tests, and 45 browser scenarios. After adding the development-server deny rule and its regression, `npm run test:browser -- --grep 'operator files are denied|wallet-free escape'` passed both selected tests ([guard log](operator-files-test.log)). This is **46 distinct browser scenarios** across the two runs, not a claim that the complete suite was rerun with 46 tests. Application and contract source did not change after the complete-suite commit.
+The [complete test log](test-results.log) records a successful `npm test` exit: 11 contract tests, 6 rules tests, and 45 browser scenarios. After adding the development-server deny rule and its regression, `npm run test:browser -- --grep 'operator files are denied|wallet-free escape'` passed both selected tests ([guard log](operator-files-test.log)). This is **46 distinct browser scenarios** across the two runs, not a claim that the complete suite was rerun with 46 tests. At the guard-test commit, application and contract source were unchanged from the complete-suite commit. The subsequent observation-helper refactor is covered by the focused validation below.
 
 The guard test uses a harmless canary, never a private key. Both its normal URL and `/@fs/` URL returned HTTP 403. The rule preserves Vite's default deny patterns and also denies `**/.local/**`. Re-review found no concrete issue in this guard or the English recording drafts.
 
@@ -99,3 +99,15 @@ The first complete suite run passed the 11 contract tests and 6 rules tests, but
 - The receipt observer can use a complete, previously verified original RPC transaction only on `TransactionNotFoundError`, with matching hash, sender, nonce, action, and chain. It does not reuse cached receipts or infer success. A deterministic boundary test returns original metadata once and then removes it from RPC responses.
 
 The spec reviewer checked both follow-up fixes and found no concrete introduced defect. Historical replacements outside the observer's available block range can still require manual hash recovery, as described in the README.
+
+## Post-review fix
+
+The fresh review of `bda73e4…2f18a91` found no documented standards breach or additional concrete implementation defect, but identified optional P3 duplication in three observation-invalidation branches. These now use one internal `invalidateObservations` helper. Rejected attempts remain rejected; other attempts lose cached mutation confirmation and become unknown. Existing messages are preserved unless the caller supplies the RPC-failure explanation.
+
+Typechecking and formatting passed. Five existing browser regressions passed on 10 October 2026 (Asia/Jakarta): explicit wallet rejection, reload confirmation revalidation, revalidation without Web Locks, storage-read failure after broadcast, and offline confirmation withdrawal. See the [focused test log](review-fix-tests.log). Reproduce with:
+
+```sh
+npm run test:browser -- --grep 'cached success|offline observation|storage reads failing after broadcast|explicit wallet rejection'
+```
+
+Both generated Sepolia wallets were rechecked and still held 0 test ETH. The public deployment, verification, real browser-wallet mutations, and recording gate remain pending.

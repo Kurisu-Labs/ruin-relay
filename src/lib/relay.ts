@@ -45,6 +45,20 @@ interface View {
   storageWarning: string;
   recoveryError?: string;
 }
+
+function invalidateObservations(attempts: Attempt[], message?: string): Attempt[] {
+  return attempts.map((attempt) =>
+    attempt.state === 'rejected'
+      ? attempt
+      : {
+          ...attempt,
+          state: 'unknown',
+          mutation: undefined,
+          ...(message === undefined ? {} : { message }),
+        },
+  );
+}
+
 export class Relay {
   private journal = new Journal();
   private listeners = new Set<() => void>();
@@ -96,11 +110,7 @@ export class Relay {
       return;
     }
     try {
-      const cached = this.journal
-        .read()
-        .map((a) =>
-          a.state === 'rejected' ? a : { ...a, state: 'unknown' as const, mutation: undefined },
-        );
+      const cached = invalidateObservations(this.journal.read());
       const restore = cached.find(unresolved) ?? cached.at(-1);
       this.set({ attempts: cached, ...(restore ? { run: restore.run, tile: restore.tile } : {}) });
     } catch {
@@ -130,9 +140,7 @@ export class Relay {
           recoveryError:
             'Recovery storage could not be read. Commit is disabled; local play remains available.',
         });
-        attempts = attempts.map((a) =>
-          a.state === 'rejected' ? a : { ...a, state: 'unknown', mutation: undefined },
-        );
+        attempts = invalidateObservations(attempts);
       }
       const restored = attempts.find(unresolved);
       this.set({
@@ -166,15 +174,9 @@ export class Relay {
         online: false,
         history: [],
         historyError: true,
-        attempts: this.state.attempts.map((a) =>
-          a.state === 'rejected'
-            ? a
-            : {
-                ...a,
-                state: 'unknown',
-                mutation: undefined,
-                message: 'Observation unavailable. Still checking your transaction.',
-              },
+        attempts: invalidateObservations(
+          this.state.attempts,
+          'Observation unavailable. Still checking your transaction.',
         ),
       });
     }
