@@ -1,5 +1,18 @@
-import { test, expect } from './helpers';
+import { test, expect, open } from './helpers';
 import fixture from '../../reference/fixtures.json' with { type: 'json' };
+test('rapid keys are applied once even when animation frames pause', async ({ page }) => {
+  await open(page);
+  await page.clock.install();
+  await page.clock.pauseAt(Date.now() + 1000);
+  await page.getByRole('application').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.locator('.steps')).toHaveText('Steps 1 / 96');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('application')).toHaveAttribute('aria-label', /Player at tile 8\./);
+  await expect(page.locator('.steps')).toHaveText('Steps 2 / 96');
+  await page.keyboard.press('r');
+  await expect(page.locator('.steps')).toHaveText('Steps 0 / 96');
+});
 test('wallet-free escape opens a one-tile editor with a bounded solvability preview', async ({
   page,
 }) => {

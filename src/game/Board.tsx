@@ -87,7 +87,11 @@ export function Board({
             graphics.fillTriangle(px - 12, py - 14, px + 12, py - 14, px + 2, py - 27);
           };
           drawRef.current();
+          // Phaser can process the same queued DOM event again before the next frame.
+          const handledKeys = new WeakSet<KeyboardEvent>();
           this.input.keyboard?.on('keydown', (event: KeyboardEvent) => {
+            if (handledKeys.has(event)) return;
+            handledKeys.add(event);
             if (!host.current?.contains(document.activeElement)) return;
             if (event.key.toLowerCase() === 'r') {
               event.preventDefault();
