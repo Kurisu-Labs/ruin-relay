@@ -3,7 +3,13 @@ import { waitForTransactionReceipt } from 'viem/actions';
 import { abi } from '../config/abi';
 import { chain, deployment } from '../config/deployment';
 import fixture from '../../reference/fixtures.json';
-import type { Attempt, Mutation, ObservedTransaction, Snapshot } from './model';
+import {
+  SIGNING_STATUS,
+  type Attempt,
+  type Mutation,
+  type ObservedTransaction,
+  type Snapshot,
+} from './model';
 export const client = createPublicClient({
   chain,
   transport: http(deployment.rpc, { timeout: 8000, retryCount: 0 }),
@@ -145,7 +151,11 @@ export function observeReceipt(
   });
 }
 
-export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt> {
+export async function verify(
+  attempt: Attempt,
+  live: Snapshot,
+  preserveSigning = false,
+): Promise<Attempt> {
   if (attempt.state === 'rejected') return attempt;
   const result = { ...attempt, mutation: undefined };
   if (attempt.inclusion) {
@@ -156,13 +166,19 @@ export async function verify(attempt: Attempt, live: Snapshot): Promise<Attempt>
       result.message = "Your edit's confirmation changed. Checking again.";
     }
   }
-  if (!attempt.activeHash)
+  if (!attempt.activeHash) {
+    // An open wallet request has no hash yet. Unknown is for a lost response or
+    // an outcome that cannot be established, including a signing attempt restored
+    // after this page is no longer waiting on the wallet.
+    if (preserveSigning && attempt.state === 'signing')
+      return { ...result, state: 'signing', message: SIGNING_STATUS };
     return {
       ...result,
       state: 'unknown',
       message:
         'Check your wallet for this transaction. Recover with transaction hash if available.',
     };
+  }
   let receipt;
   let activeHash = attempt.activeHash;
   for (const hash of new Set([attempt.activeHash, ...attempt.hashes])) {
