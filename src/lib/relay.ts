@@ -122,7 +122,7 @@ export class Relay {
       const live = await readDungeon();
       let attempts = this.state.attempts;
       try {
-        attempts = this.journal.available ? await this.journal.sync(live) : this.journal.read();
+        attempts = await this.journal.sync(live);
         this.set({ recoveryError: undefined });
       } catch {
         this.set({

@@ -47,3 +47,26 @@ Local private keys are excluded from Git. Test ETH funding remains pending. Thes
 6. Capture the English product demo and separate presentation. Describe business/retention ideas as hypotheses until observed evidence exists.
 
 One mutation, a CLI-only rehearsal, or a local Anvil recording does not meet the two-profile Sepolia browser release gate.
+
+## Standards review
+
+Reviewed implementation commit `98e97b8` against baseline `bda73e4` with an independent standards reviewer. The reviewer identified two documented-standard breaches of ADR §C.7:
+
+- **P1, journal evidence preservation:** an unsaved entry replaced a fresh durable record wholesale. A temporary storage failure in one tab could erase a hash or replacement recorded by another tab. **Resolved:** merge known hashes and transaction metadata, preserve durable updates, and check all retained hashes for canonical inclusion. A two-tab regression covers transient storage failure followed by manual cancellation recovery.
+- **P1, original nonce evidence:** transaction metadata was accepted as original evidence without checking its captured sender/action. **Resolved:** the shared `originalEvidence` helper requires the original hash and matching sender, destination, value, and calldata. A wrong-sender RPC metadata regression verifies that an unrelated consumed nonce cannot unlock the attempt.
+
+The reviewer also noted possible duplicated original-evidence selection, a judgment heuristic resolved by the shared helper. Re-review found no concrete defect introduced by these fixes.
+
+Standards findings: two breaches and one associated duplication concern, all resolved; the highest original severity was P1.
+
+## Spec review
+
+An independent spec reviewer compared the same diff with GitHub issue #1 and the normative documents:
+
+- **P2, cached success without atomic coordination:** a reload could restore a cached confirmation without receipt verification when Web Locks were unavailable. This contradicted “cached success is not fresh proof.” **Resolved:** synchronization verifies outcomes read-only even without Web Locks; signing remains disabled. A reload regression keeps success withdrawn when receipt reads fail.
+- **P2, receipt identity:** returned transaction and receipt hashes were not explicitly compared with the requested hash, contrary to “verify the attempt’s transaction and DungeonMutated event.” **Resolved:** bind returned hashes to requested hashes before interpreting receipts, with two RPC-response mismatch regressions.
+- **Partial release requirement:** verified Sepolia deployment, two real browser-wallet mutations, measured Sepolia gas, and release videos remain pending, as disclosed above. The required “two distinct wallets in separate browser profiles against the same fresh deployment” remains an external release gate.
+
+No material unasked scope creep was found. Re-review found the two code findings corrected and no concrete introduced defect.
+
+Spec findings: two code findings resolved (highest original severity P2), one release gap remains pending.

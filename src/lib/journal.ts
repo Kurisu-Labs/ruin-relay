@@ -112,7 +112,8 @@ export class Journal {
     this.cached = attempts;
   }
   async sync(live: Snapshot): Promise<Attempt[]> {
-    return this.locked(async () => {
+    const coordinated = this.available;
+    const check = async () => {
       const checked: Attempt[] = [];
       for (const attempt of this.read()) {
         try {
@@ -126,9 +127,10 @@ export class Journal {
           });
         }
       }
-      if (checked.length) this.save(checked);
+      if (coordinated && checked.length) this.save(checked);
       return checked;
-    });
+    };
+    return coordinated ? this.locked(check) : check();
   }
   async claim(attempt: Attempt, live: Snapshot): Promise<Attempt[]> {
     return this.locked(async () => {

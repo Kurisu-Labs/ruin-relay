@@ -89,6 +89,24 @@ test('a pending edit that loses the revision race has a reverted receipt and no 
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
 });
 
+test('cached success stays unverified when atomic coordination disappears', async ({ page }) => {
+  await injectWallet(page);
+  await open(page);
+  await walk(page);
+  await submit(page);
+  await expect(page.locator('.success')).toHaveCount(1);
+  await page.addInitScript(() => Object.defineProperty(navigator, 'locks', { value: undefined }));
+  await page.route('http://127.0.0.1:8545/**', (route) =>
+    route.request().postDataJSON().method === 'eth_getTransactionReceipt'
+      ? route.abort()
+      : route.continue(),
+  );
+  await page.reload();
+  await expect(page.locator('.revision')).toHaveText('Live revision 1');
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
+  await expect(page.locator('.success')).toHaveCount(0);
+});
+
 for (const mismatch of ['receipt', 'transaction']) {
   test(`a mismatched ${mismatch} hash cannot confirm the requested edit`, async ({ page }) => {
     await injectWallet(page);
