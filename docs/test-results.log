@@ -1,0 +1,102 @@
+
+> ruin-relay@0.1.0 test
+> npm run typecheck && npm run test:contract && npm run test:rules && npm run test:browser
+
+
+> ruin-relay@0.1.0 typecheck
+> tsc --noEmit
+
+
+> ruin-relay@0.1.0 test:contract
+> node scripts/foundry.mjs forge test --root contracts
+
+No files changed, compilation skipped
+
+Ran 11 tests for test/RuinRelay.t.sol:RuinRelayTest
+[PASS] testCanonicalSeed() (gas: 78300)
+[PASS] testErrorsAndRevertPreserveState() (gas: 184475)
+[PASS] testFuzzInvalidCallsPreserveOrAdvanceExactlyOnce(uint64,uint256,uint8,uint8) (runs: 256, μ: 12478, ~: 12479)
+[PASS] testFuzzMutationSequences(uint256) (runs: 256, μ: 31437528, ~: 30619724)
+[PASS] testFuzzSolvabilityAgainstIndependentOracle(uint64) (runs: 256, μ: 903343, ~: 6033)
+[PASS] testGasOpenBoard96Steps() (gas: 755452)
+[PASS] testRejectInvalidConfigurations() (gas: 326621)
+[PASS] testRevisitsAnd96MoveBoundary() (gas: 158433)
+[PASS] testSolvabilityQueryMalformedMasks() (gas: 142576)
+[PASS] testStaleRaceAndNonpayability() (gas: 115593)
+[PASS] testTwoContributorsMatchFixturesAndEvents() (gas: 196628)
+Suite result: ok. 11 passed; 0 failed; 0 skipped; finished in 10.86s (11.38s CPU time)
+
+Ran 1 test suite in 10.87s (10.86s CPU time): 11 tests passed, 0 failed, 0 skipped (11 total tests)
+
+> ruin-relay@0.1.0 test:rules
+> vitest run
+
+
+ RUN  v5.0.3 /home/boyaditya/Coding/ruin-relay
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  21:52:02
+   Duration  585ms (transform 56%, tests 24%, import 12%, worker 7%)
+
+
+> ruin-relay@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:255865) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:255976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 45 tests using 1 worker
+
+(node:256008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/browser/ambiguity.spec.ts:3:1 › a requested nonce is not proof of the original nonce when the wallet response is lost (5.3s)
+  ✓   2 tests/browser/commit.spec.ts:3:1 › two wallet profiles contribute the exact canonical revisions and public history (9.7s)
+  ✓   3 tests/browser/commit.spec.ts:31:1 › a stale run stays frozen, Restart repeats it, and Play latest adopts the live dungeon (4.1s)
+  ✓   4 tests/browser/commit.spec.ts:50:1 › explicit wallet rejection restores the run and tile without a success claim (4.4s)
+  ✓   5 tests/browser/commit.spec.ts:68:1 › pending attempts survive reload and status reads never resubmit (6.1s)
+  ✓   6 tests/browser/commit.spec.ts:87:1 › a lost wallet response without original linkage remains locked after manual hash recovery (9.8s)
+  ✓   7 tests/browser/commit.spec.ts:105:1 › atomic same-profile claim allows one signing request across two accounts (8.0s)
+  ✓   8 tests/browser/game.spec.ts:3:1 › rapid keys are applied once even when animation frames pause (2.9s)
+  ✓   9 tests/browser/game.spec.ts:16:1 › wallet-free escape opens a one-tile editor with a bounded solvability preview (4.2s)
+  ✓  10 tests/browser/observations.spec.ts:6:1 › history failure leaves current-state play usable and duplicate logs produce one row (4.1s)
+  ✓  11 tests/browser/observations.spec.ts:35:1 › offline local play remains available but cannot commit until fresh observation (5.7s)
+  ✓  12 tests/browser/observations.spec.ts:51:1 › cached success is checked again before displaying a current confirmation (5.2s)
+  ✓  13 tests/browser/observations.spec.ts:70:1 › a pending edit that loses the revision race has a reverted receipt and no contribution (5.9s)
+  ✓  14 tests/browser/observations.spec.ts:92:1 › cached success stays unverified when atomic coordination disappears (5.7s)
+  ✓  15 tests/browser/observations.spec.ts:111:3 › a mismatched receipt hash cannot confirm the requested edit (5.3s)
+  ✓  16 tests/browser/observations.spec.ts:111:3 › a mismatched transaction hash cannot confirm the requested edit (5.1s)
+  ✓  17 tests/browser/observations.spec.ts:141:1 › the move cap freezes exploration and keyboard controls remain reachable (9.9s)
+  ✓  18 tests/browser/observations.spec.ts:157:1 › a narrow mobile viewport keeps the board and critical controls within the page (3.4s)
+  ✓  19 tests/browser/observations.spec.ts:167:1 › public rules API agrees with Solidity on random masks and direct unsolvable edits revert (301ms)
+  ✓  20 tests/browser/recovery.spec.ts:16:1 › initial journal failure blocks signing while keeping the local escape (4.5s)
+  ✓  21 tests/browser/recovery.spec.ts:33:1 › unreadable recovery storage blocks signing while current dungeon play remains available (4.5s)
+  ✓  22 tests/browser/recovery.spec.ts:51:1 › missing atomic coordination blocks Commit and preserves local gameplay (4.1s)
+  ✓  23 tests/browser/recovery.spec.ts:66:1 › a post-broadcast storage failure keeps the hash visible and the earlier journal locked on reload (6.3s)
+  ✓  24 tests/browser/recovery.spec.ts:90:1 › a wrong network requires switching before requesting a signature (4.1s)
+  ✓  25 tests/browser/recovery.spec.ts:103:1 › storage reads failing after broadcast retain the returned hash in memory (4.3s)
+  ✓  26 tests/browser/recovery.spec.ts:127:1 › wallet account changes before signing abort; changes after issue preserve the fixed attempt (4.8s)
+  ✓  27 tests/browser/recovery.spec.ts:156:1 › own contribution reconciles with a later mutation in the same block (4.8s)
+  ✓  28 tests/browser/recovery.spec.ts:195:3 › receipt editor mismatch cannot claim contribution success (4.9s)
+  ✓  29 tests/browser/recovery.spec.ts:195:3 › receipt contract mismatch cannot claim contribution success (5.2s)
+  ✓  30 tests/browser/recovery.spec.ts:195:3 › receipt revision mismatch cannot claim contribution success (4.6s)
+  ✓  31 tests/browser/recovery.spec.ts:195:3 › receipt tile mismatch cannot claim contribution success (4.9s)
+  ✓  32 tests/browser/recovery.spec.ts:195:3 › receipt mask mismatch cannot claim contribution success (4.9s)
+  ✓  33 tests/browser/recovery.spec.ts:195:3 › receipt becameWall mismatch cannot claim contribution success (4.6s)
+  ✓  34 tests/browser/recovery.spec.ts:195:3 › receipt missing mismatch cannot claim contribution success (4.7s)
+  ✓  35 tests/browser/recovery.spec.ts:236:1 › orphaned confirmation is withdrawn, locks the attempt, and removes orphaned history (4.3s)
+  ✓  36 tests/browser/recovery.spec.ts:253:1 › same revision with a different layout is stale while the run remains frozen (2.5s)
+  ✓  37 tests/browser/recovery.spec.ts:270:1 › offline observation withdraws cached success and keeps local play separate from history failure (3.3s)
+  ✓  38 tests/browser/replacement.spec.ts:3:1 › speed-up recovery uses verified original metadata when RPC stops returning the original transaction (5.5s)
+  ✓  39 tests/browser/replacement.spec.ts:44:1 › a verified speed-up is followed automatically through its replacement hash (4.1s)
+  ✓  40 tests/browser/replacement.spec.ts:81:3 › a manually recovered cancellation ends the original attempt only after canonical inclusion (4.1s)
+  ✓  41 tests/browser/replacement.spec.ts:81:3 › a manually recovered different action ends the original attempt only after canonical inclusion (5.1s)
+  ✓  42 tests/browser/replacement.spec.ts:118:1 › an unrelated or duplicate-payload hash with another nonce does not resolve a lost response (4.8s)
+  ✓  43 tests/browser/replacement.spec.ts:135:1 › closing the signing tab retains the deployment lock across wallet accounts (7.8s)
+  ✓  44 tests/browser/replacement.spec.ts:154:1 › a tab with unsaved status preserves replacement evidence recorded by another tab (10.7s)
+  ✓  45 tests/browser/replacement.spec.ts:207:1 › wrong-sender transaction metadata cannot supply original nonce evidence (4.1s)
+
+  45 passed (4.0m)

@@ -1,6 +1,6 @@
 # Release evidence
 
-Status: local implementation under verification. The Sepolia release is **not complete**.
+Status: local implementation, automated checks, and code review completed. The Sepolia release is **not complete**.
 
 ## Public test-wallet setup
 
@@ -11,31 +11,51 @@ Generated on 10 October 2026 (Asia/Jakarta):
 | Deployer / player A | `0xF7A09917313f2740990de8AA236077Be198ccD69` |
 | Player B            | `0x1b75EB514FAEE2E788D313001A41b1D0bd59ea0F` |
 
-Local private keys are excluded from Git. Test ETH funding remains pending. These addresses are not deployment or mutation evidence.
+Local private keys are excluded from Git and blocked by the development server. Both addresses had a balance of **0 Arbitrum Sepolia ETH** when checked. Test ETH funding remains pending. These addresses are not deployment or mutation evidence.
 
 ## Verification record
 
-| Field                                   | Evidence                                                  |
-| --------------------------------------- | --------------------------------------------------------- |
-| Source baseline                         | `bda73e4d68599aa8537088dd6985c6d126cc7e52`                |
-| Test commit                             | Pending final commit                                      |
-| Test date                               | 10 October 2026, Asia/Jakarta                             |
-| Solidity compiler                       | 0.8.24, optimizer 200, Cancun                             |
-| Foundry                                 | 1.7.1                                                     |
-| Fuzz configuration                      | 256 cases per fuzz test; 12 actions per mutation sequence |
-| Typechecking / build                    | Pending final run                                         |
-| Rules / independent oracle              | Pending final run                                         |
-| Contract tests / gas snapshot           | Pending final run                                         |
-| Browser scenarios                       | Pending final run                                         |
-| Sepolia chain                           | 421614                                                    |
-| Deployed contract / source verification | Pending funding and deployment                            |
-| Deployment transaction                  | Pending                                                   |
-| Real UI mutation A, revision 0→1        | Pending                                                   |
-| Real UI mutation B, revision 1→2        | Pending                                                   |
-| Sepolia gas estimates / receipts        | Pending                                                   |
-| Product demo ≤3 minutes                 | Pending                                                   |
-| Presentation 2–3 minutes                | Pending                                                   |
-| Human keyboard / mobile inspection      | Pending                                                   |
+| Field                                   | Evidence                                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Source baseline                         | `bda73e4d68599aa8537088dd6985c6d126cc7e52`                                                                   |
+| Complete-suite commit                   | `d087cdf1f33176ce9857910f29dc4984b0c7d9ba`                                                                   |
+| Development-server guard commit         | `0d379d2912ef89fcebcc3efb18f7d4618e158032`                                                                   |
+| Implementation / test date              | 10 October 2026, Asia/Jakarta; design handoff predates implementation                                        |
+| Runtime                                 | Node.js 26.11.1, npm 11.20.0                                                                                 |
+| Solidity compiler                       | 0.8.24, optimizer 200, Cancun                                                                                |
+| Foundry                                 | 1.7.1                                                                                                        |
+| Fuzz configuration                      | 256 cases per fuzz test; 12 actions per mutation sequence                                                    |
+| Typechecking / build                    | Passed; `npm test` includes typechecking, and `npm run build` passed at the guard commit                     |
+| Formatting                              | Prettier, Foundry formatting, and Git whitespace checks passed                                               |
+| Rules / independent oracle              | 6 rules tests passed; independent Solidity fuzz oracle and 80 browser TS/Solidity random-mask comparisons    |
+| Contract tests / gas snapshot           | 11 tests passed; [focused gas snapshot](../.gas-snapshot), with measurement limits below                     |
+| Browser scenarios                       | 45 passed in the complete suite; 1 additional guard scenario passed with a repeated wallet-free escape smoke |
+| Keyboard / mobile inspection            | Agent inspected desktop WASD/R and the 375px mobile layout; separate human acceptance remains pending        |
+| Screenshots                             | [Desktop](screenshots/desktop.png), [375px mobile](screenshots/mobile.png); both local Anvil                 |
+| Performance benchmark                   | First-play latency and FPS not measured; build chunk-size warning recorded below                             |
+| Sepolia chain                           | 421614                                                                                                       |
+| Deployed contract / source verification | Pending funding and deployment                                                                               |
+| Deployment transaction                  | Pending                                                                                                      |
+| Real UI mutation A, revision 0→1        | Pending                                                                                                      |
+| Real UI mutation B, revision 1→2        | Pending                                                                                                      |
+| Sepolia gas estimates / receipts        | Pending                                                                                                      |
+| Product demo ≤3 minutes                 | [English script ready](demo-script.md); recording pending                                                    |
+| Presentation 2–3 minutes                | [English script ready](presentation.md); recording pending                                                   |
+
+The [complete test log](test-results.log) records a successful `npm test` exit: 11 contract tests, 6 rules tests, and 45 browser scenarios. After adding the development-server deny rule and its regression, `npm run test:browser -- --grep 'operator files are denied|wallet-free escape'` passed both selected tests ([guard log](operator-files-test.log)). This is **46 distinct browser scenarios** across the two runs, not a claim that the complete suite was rerun with 46 tests. Application and contract source did not change after the complete-suite commit.
+
+The guard test uses a harmless canary, never a private key. Both its normal URL and `/@fs/` URL returned HTTP 403. The rule preserves Vite's default deny patterns and also denies `**/.local/**`. Re-review found no concrete issue in this guard or the English recording drafts.
+
+Local EVM gas reporting for `testGasOpenBoard96Steps|testTwoContributors` measured deployment at **602,912 gas** and `completeAndMutate` across three sampled calls at **109,803 / 144,674 / 110,473 / 213,746 gas** (minimum / mean / median / maximum). These are local samples, not Sepolia receipts or a theoretical maximum. The snapshot records whole test-function gas, including setup, so its numbers must not be presented as transaction gas. Reproduce with:
+
+```sh
+node scripts/foundry.mjs forge snapshot --root contracts --match-test 'testGasOpenBoard96Steps|testTwoContributors'
+node scripts/foundry.mjs forge test --root contracts --match-test 'testGasOpenBoard96Steps|testTwoContributors' --gas-report
+```
+
+The Vite build passed with a large-chunk warning: main JavaScript 568.07 kB (174.16 kB gzip), dynamically loaded Phaser 1,196.46 kB (318.59 kB gzip). A successful build is not a latency or FPS benchmark.
+
+Session history was split into atomic commits before publication. The complete-suite and guard-test commits above have exactly the same Git trees as the originally tested local commits `9e2e886` and `b30278a`, respectively. The reviewed implementation tree `75a98fc` likewise matches original commit `98e97b8`. Changing commit boundaries did not change application, contract, or test content.
 
 ## Release procedure
 
@@ -48,9 +68,9 @@ Local private keys are excluded from Git. Test ETH funding remains pending. Thes
 
 One mutation, a CLI-only rehearsal, or a local Anvil recording does not meet the two-profile Sepolia browser release gate.
 
-## Standards review
+## Standards
 
-Reviewed implementation commit `98e97b8` against baseline `bda73e4` with an independent standards reviewer. The reviewer identified two documented-standard breaches of ADR §C.7:
+Reviewed implementation commit `75a98fc` against baseline `bda73e4` with an independent standards reviewer. The reviewer identified two documented-standard breaches of ADR §C.7:
 
 - **P1, journal evidence preservation:** an unsaved entry replaced a fresh durable record wholesale. A temporary storage failure in one tab could erase a hash or replacement recorded by another tab. **Resolved:** merge known hashes and transaction metadata, preserve durable updates, and check all retained hashes for canonical inclusion. A two-tab regression covers transient storage failure followed by manual cancellation recovery.
 - **P1, original nonce evidence:** transaction metadata was accepted as original evidence without checking its captured sender/action. **Resolved:** the shared `originalEvidence` helper requires the original hash and matching sender, destination, value, and calldata. A wrong-sender RPC metadata regression verifies that an unrelated consumed nonce cannot unlock the attempt.
@@ -59,7 +79,7 @@ The reviewer also noted possible duplicated original-evidence selection, a judgm
 
 Standards findings: two breaches and one associated duplication concern, all resolved; the highest original severity was P1.
 
-## Spec review
+## Spec
 
 An independent spec reviewer compared the same diff with GitHub issue #1 and the normative documents:
 

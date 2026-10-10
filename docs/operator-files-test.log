@@ -1,0 +1,24 @@
+
+> ruin-relay@0.1.0 test:browser
+> playwright test --grep operator files are denied|wallet-free escape
+
+[WebServer] (node:260004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:260113) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:260168) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/game.spec.ts:16:1 › wallet-free escape opens a one-tile editor with a bounded solvability preview (4.3s)
+[WebServer] The request id "/home/boyaditya/Coding/ruin-relay/.local/operator-file-canary.txt" is outside of Vite serving allow list.
+[WebServer]
+[WebServer] - /home/boyaditya/Coding/ruin-relay
+[WebServer]
+[WebServer] Refer to docs https://vite.dev/config/server-options.html#server-fs-allow for configurations and more details.
+[WebServer]
+[WebServer] The request id "/home/boyaditya/Coding/ruin-relay/.local/operator-file-canary.txt" is outside of Vite serving allow list.
+  ✓  2 tests/browser/operator-files.spec.ts:4:1 › operator files are denied by the development server (37ms)
+
+  2 passed (8.8s)
