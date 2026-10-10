@@ -85,8 +85,18 @@ test('a pending edit that loses the revision race has a reverted receipt and no 
   await page.getByLabel('Recover with transaction hash').fill(hash);
   await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
   await expect(page.getByText('COMMIT ATTEMPT · REVERTED')).toBeVisible();
+  await expect(page.locator('.transaction')).toContainText(
+    'Someone changed the dungeon first. Play latest to try the new revision.',
+  );
   await expect(page.locator('.success')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
+  await page.reload();
+  await expect(page.getByText('COMMIT ATTEMPT · REVERTED')).toBeVisible();
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Play latest', exact: true }).click();
+  await expect(page.getByText('Playing revision 1 · Live revision 1')).toBeVisible();
+  await expect(page.getByText('Steps 0 / 96')).toBeVisible();
 });
 
 test('cached success stays unverified when atomic coordination disappears', async ({ page }) => {

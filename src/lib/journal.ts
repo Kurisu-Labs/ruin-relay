@@ -1,5 +1,6 @@
 import { configured, deployment } from '../config/deployment';
 import { calldata, verify } from './chain';
+import { inflightKey } from './inflight';
 import { pack, preview, validatePath } from './rules';
 import { SIGNING_STATUS, unresolved, type Attempt, type Snapshot } from './model';
 
@@ -56,7 +57,35 @@ function parse(raw: string): Attempt[] {
 export class Journal {
   private unsaved = new Map<string, Attempt>();
   private cached?: Attempt[];
+  private releaseInflight?: () => void;
   warning = '';
+  /**
+   * Held for the whole wallet prompt. Another document can see it without
+   * taking the journal lock, and a closed document releases it.
+   * Returns false when another document already holds it.
+   */
+  beginInflight(): Promise<boolean> {
+    if (!navigator.locks?.request) return Promise.resolve(false);
+    if (this.releaseInflight) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      void navigator.locks.request(inflightKey, { ifAvailable: true }, (lock) => {
+        if (!lock) {
+          resolve(false);
+          return;
+        }
+        return new Promise<void>((release) => {
+          this.releaseInflight = () => {
+            this.releaseInflight = undefined;
+            release();
+          };
+          resolve(true);
+        });
+      });
+    });
+  }
+  endInflight() {
+    this.releaseInflight?.();
+  }
   get available() {
     return configured && Boolean(navigator.locks?.request);
   }

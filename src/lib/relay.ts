@@ -5,6 +5,7 @@ import { configured, deployment } from '../config/deployment';
 import {
   calldata,
   client,
+  commitFeeCap,
   readDungeon,
   readHistory,
   sameAction,
@@ -23,12 +24,14 @@ import {
   type Snapshot,
 } from './model';
 import { EXIT, MAX_MOVES, move, pack, preview, type Direction } from './rules';
-import { explain, rejected, switchNetwork, wallet } from './wallet';
+import { explain, isDeploymentChain, notBroadcast, switchNetwork, wallet } from './wallet';
 
 interface Prepared {
   account: Address;
   gas: bigint;
   fee: bigint;
+  maxFeePerGas: bigint;
+  maxPriorityFeePerGas: bigint;
   run: Run;
   tile: number;
 }
@@ -292,7 +295,7 @@ export class Relay {
           'Atomic coordination across tabs is unavailable. Local play works; Commit is disabled.',
         );
       const connected = await wallet();
-      if ((await connected.getChainId()) !== deployment.chainId) throw new Error('Wrong network');
+      if (!isDeploymentChain(await connected.getChainId())) throw new Error('Wrong network');
       const live = await readDungeon();
       this.set({ live, online: true });
       if (!this.eligible()) throw new Error('Stale run');
@@ -314,8 +317,10 @@ export class Relay {
         args,
         account,
       });
-      const fee = gas * (await client.getGasPrice());
-      this.set({ prepared: { run, tile, account, gas, fee } });
+      const fees = await commitFeeCap();
+      this.set({
+        prepared: { run, tile, account, gas, fee: gas * fees.maxFeePerGas, ...fees },
+      });
     } catch (error) {
       this.set({ error: explain(error) });
     } finally {
@@ -333,7 +338,7 @@ export class Relay {
       const [account] = await connected.getAddresses();
       if (
         account.toLowerCase() !== prepared.account.toLowerCase() ||
-        (await connected.getChainId()) !== deployment.chainId
+        !isDeploymentChain(await connected.getChainId())
       )
         throw new Error('Account or network changed before signing');
       const live = await readDungeon();
@@ -347,10 +352,11 @@ export class Relay {
         args: [run.snapshot.revision, pack(run.path), run.path.length, tile],
         account,
       });
-      const requestedNonce = await client.getTransactionCount({
-        address: account,
-        blockTag: 'pending',
-      });
+      const [pendingNonce, latestNonce] = await Promise.all([
+        client.getTransactionCount({ address: account, blockTag: 'pending' }),
+        client.getTransactionCount({ address: account, blockTag: 'latest' }),
+      ]);
+      const fees = await commitFeeCap();
       attempt = {
         id: crypto.randomUUID(),
         run,
@@ -361,9 +367,16 @@ export class Relay {
         state: 'signing',
         hashes: [],
         observed: [],
-        requestedNonce,
+        requestedNonce: pendingNonce,
+        nonceAtSign: { pending: pendingNonce, latest: latestNonce },
+        maxFeePerGas: fees.maxFeePerGas,
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
         message: SIGNING_STATUS,
       };
+      if (!(await this.journal.beginInflight()))
+        throw new Error(
+          'An edit is already in progress for this dungeon. Check its status before submitting another.',
+        );
       const claimed = await this.journal.claim(attempt, live);
       this.signingId = attempt.id;
       this.requestInFlight = true;
@@ -372,7 +385,7 @@ export class Relay {
       const [activeAccount] = await connected.getAddresses();
       if (
         activeAccount.toLowerCase() !== account.toLowerCase() ||
-        (await connected.getChainId()) !== deployment.chainId
+        !isDeploymentChain(await connected.getChainId())
       )
         throw new Error('Account or network changed before signing');
       issued = true;
@@ -383,7 +396,9 @@ export class Relay {
         value: 0n,
         data: attempt.calldata,
         gas: prepared.gas,
-        nonce: requestedNonce,
+        nonce: pendingNonce,
+        maxFeePerGas: fees.maxFeePerGas,
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       });
       const id = attempt.id;
       this.set({
@@ -411,19 +426,22 @@ export class Relay {
       }
       this.watch(hash, id);
     } catch (error) {
+      // `issued` means the wallet request was sent, not that a transaction was
+      // accepted. Only a definitive pre-broadcast rejection releases the journal.
+      const beforeBroadcast = !issued || notBroadcast(error);
       if (attempt)
         this.set({
           attempts: await this.journal.update(attempt.id, (a) => ({
             ...a,
-            state: !issued || rejected(error) ? 'rejected' : 'unknown',
-            message:
-              !issued || rejected(error)
-                ? 'Wallet request rejected. Your run and edit are preserved.'
-                : 'Check your wallet for this transaction. Recover with transaction hash if available.',
+            state: beforeBroadcast ? 'rejected' : 'unknown',
+            message: beforeBroadcast
+              ? explain(error)
+              : 'Check your wallet for this transaction. Recover with transaction hash if available.',
           })),
         });
       this.set({ error: explain(error) });
     } finally {
+      this.journal.endInflight();
       this.signingId = undefined;
       this.requestInFlight = false;
       this.set({ busy: false });
