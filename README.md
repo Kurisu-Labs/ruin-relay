@@ -4,7 +4,7 @@
 
 A desktop browser puzzle with one shared 7×7 dungeon. Play locally without a wallet; a valid escape lets you toggle one allowed tile through a single Solidity transaction. The contract verifies the path against the old dungeon and checks that the new dungeon still has an escape route.
 
-The application and local test harness are implemented. **The Sepolia release gate is pending:** no public deployment, verified explorer source, real mutation hashes, or release videos are claimed here. See [release evidence](docs/release-evidence.md).
+The application and local test harness are implemented. The official Arbitrum Sepolia contract is deployed and Sourcify-verified (`exact_match`, chain 421614). **The Sepolia release gate is pending:** browser-wallet mutations on that official contract, and the release videos, are still outstanding. A separate rehearsal copy is recorded only as rehearsal. See [release evidence](docs/release-evidence.md).
 
 ## Run locally
 
@@ -18,7 +18,7 @@ npm run local
 
 Open http://127.0.0.1:4173/play. This command starts a fresh Anvil chain with ID 421614, deploys the canonical seed, and starts Vite with the deployment metadata. Stop it with Ctrl+C. Local chain state is disposable. The UI labels this environment **Local Anvil** and does not present its hashes as public Sepolia transactions.
 
-For frontend work without Anvil, `npm run dev` serves the practice seed when deployment metadata is absent. Practice has no live-chain or commit claims. `npm run build` generates the static site in `dist/`. Any static host must fall back to `index.html` for `/play`, `/history`, and `/about`.
+For frontend work without Anvil, `npm run dev` serves the practice seed when deployment metadata is absent. Practice has no live-chain or commit claims. `npm run build` generates the static site in `dist/` and inlines public `VITE_*` variables from the environment present at build time. `vercel.json` runs that command, publishes `dist`, and rewrites `/play`, `/history`, `/about`, and every other path to `/index.html`. Vercel serves files that already exist in `dist` before those rewrites, so hashed assets stay assets.
 
 Focus the board and use WASD or arrow keys. Illegal moves do not add steps. Reach EXIT within 96 moves, choose one highlighted editable tile, and review the wall/floor change. **Restart** repeats the same snapshot; **Play latest** starts on the freshly observed live dungeon. A stale run remains playable as practice and cannot commit.
 
@@ -51,11 +51,11 @@ npm run dev
 
 The two generated wallets are stored in `.local/sepolia-wallets.json`, with directory mode 700 and file mode 600, and are excluded from Git. They are **throwaway testnet wallets**. Keys are plaintext local operator secrets; protect the machine and never use them for mainnet. They never enter the Vite bundle, and the development server denies requests into `.local/`. Re-running setup preserves the wallets. The deploy script checks the network, records the intended nonce before broadcast, and resumes a recorded deployment instead of silently deploying again. A lost hash requires explicit recovery from wallet/explorer evidence.
 
-Fund wallet A and B with **Arbitrum Sepolia ETH**, chain ID **421614**. Arbitrum's [chain information and faucet list](https://docs.arbitrum.io/chain-info#faucet-list) identifies public RPCs and faucets. The checked faucet requires address eligibility/BringID verification; obtaining test ETH can require a human wallet/login step. No funds have been acquired automatically. Public wallet addresses are in [release evidence](docs/release-evidence.md).
+Fund wallet A and B with **Arbitrum Sepolia ETH**, chain ID **421614**, before a new deploy or browser mutation. Arbitrum's [chain information and faucet list](https://docs.arbitrum.io/chain-info#faucet-list) identifies public RPCs and faucets. The checked faucet requires address eligibility/BringID verification; obtaining test ETH can require a human wallet/login step. Public wallet addresses and the recorded deployment are in [release evidence](docs/release-evidence.md).
 
-Public frontend config is documented in `.env.example`: RPC, contract address, deployment block, and local-environment flag. Deployment writes `.env.local`. Never put private keys into `VITE_*` variables. Source verification uses Blockscout; confirm the explorer visibly reports success and record the link before marking the gate complete. An Arbiscan verification can additionally use the operator's own Etherscan API key through Foundry.
+Public frontend config is documented in `.env.example`: RPC, official contract `0xDaFc851910D91D54916349EECB8d320a5a56b988`, deployment block `317783571`, and local-environment flag. Deployment writes `.env.local`. Never put private keys into `VITE_*` variables. `node scripts/sepolia.mjs verify` submits the artifact to Sourcify. Blockscout's Arbitrum Sepolia API is blocked by Cloudflare. An Arbiscan verification can additionally use the operator's own Etherscan API key through Foundry.
 
-For a CLI fixture rehearsal on a fresh deployment, `node scripts/sepolia.mjs fixture-demo` submits both canonical edits with the generated wallets and records receipts. **This does not replace the required browser-wallet demonstration.** For the release video, import the throwaway A/B keys locally into two separate wallet/browser profiles and perform both runs through the UI on a fresh deployment. Never record the import, keys, or seed phrases.
+For a CLI fixture rehearsal on a fresh deployment, `node scripts/sepolia.mjs fixture-demo` submits both canonical edits with the generated wallets and records receipts. **This does not replace the required browser-wallet demonstration.** One such rehearsal already ran on contract `0x57b7461dc06dda9e11159c0e75306e1655545a64` and is labeled rehearsal in the release evidence. For the release video, import the throwaway A/B keys locally into two separate wallet/browser profiles and perform both runs through the UI on the official deployment. Never record the import, keys, or seed phrases.
 
 ## Recovery and integrity
 
