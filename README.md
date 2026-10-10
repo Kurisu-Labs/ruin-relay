@@ -40,6 +40,8 @@ The fixture is `reference/fixtures.json`: revision 0 → tile 31 → `0xd05b8279
 
 ## Sepolia setup
 
+The commands below use the generated local wallets. The operator-selected release addresses and their funding/signing status are recorded in [release evidence](docs/release-evidence.md#selected-release-wallets). Using those addresses requires their browser-wallet or local-keystore signing setup; supplying public addresses does not reconfigure the CLI signer.
+
 ```sh
 node scripts/setup-wallets.mjs
 node scripts/sepolia.mjs balance

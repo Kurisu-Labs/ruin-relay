@@ -8,7 +8,7 @@ The implementation is already on `main` at `3019097`. This release follow-up tra
 
 - [x] Implement the contract, wallet-free game, fixed run snapshots, edit drafts, durable commit attempts, recovery, and public history.
 - [x] Record local contract, rules, browser, build, and formatting validation, and address the code-review findings.
-- [ ] Fund both generated wallets with Arbitrum Sepolia ETH; confirm chain ID 421614 before deploying.
+- [ ] Fund both selected release wallets with Arbitrum Sepolia ETH and connect their signing setup; confirm chain ID 421614 before deploying.
 - [ ] Deploy a fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
 - [ ] In browser profile A, submit tile 31 from revision 0 and record its real receipt, explorer link, and resulting walls `0xd05b827900a`.
 - [ ] In separate browser profile B, submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
@@ -19,6 +19,19 @@ The implementation is already on `main` at `3019097`. This release follow-up tra
 Keep issue #1 open until the unchecked release requirements have verifiable evidence. Keep the release PR in draft while these gates are pending. Local Anvil hashes, a CLI rehearsal, and recording scripts do not satisfy the real two-profile browser demonstration. The commands and canonical routes are documented below and in the README.
 
 ## Public test-wallet setup
+
+### Selected release wallets
+
+Provided by the operator on 10 October 2026 (Asia/Jakarta), with balances read from the Arbitrum Sepolia RPC on chain 421614:
+
+| Purpose             | Address                                      | Test ETH |
+| ------------------- | -------------------------------------------- | -------- |
+| Deployer / player A | `0x37714b787066ce967d027B752D045e13b8b64A84` | 0        |
+| Player B            | `0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9` | 0        |
+
+Funding and a browser-wallet or local-keystore signing setup are pending. Public addresses alone do not enable deployment or mutation signing. These addresses are not deployment or mutation evidence.
+
+### Generated local wallets
 
 Generated on 10 October 2026 (Asia/Jakarta):
 
@@ -75,7 +88,7 @@ Session history was split into atomic commits before publication. The complete-s
 
 ## Release procedure
 
-1. Fund the generated throwaway wallets via a faucet listed by Arbitrum, then run the balance command.
+1. Fund the selected release wallets via a faucet listed by Arbitrum, connect their browser-wallet or local-keystore signing setup, and verify their balances on chain 421614. The existing `scripts/sepolia.mjs` commands use the generated local wallets until a different signing setup is configured.
 2. Deploy a fresh canonical dungeon and verify its source. Record the public address, deployment block/hash, compiler settings, and explorer verification result.
 3. Configure the browser using that deployment. In profile A, play route `DRRRRURRDDLDLLDDRDRR`, toggle 31, sign, and verify revision 1 / walls `0xd05b827900a`.
 4. In a separate wallet profile B, play `DRRRRURRDDLDLLLDDRRDRR`, toggle 38, sign, and verify revision 2 / walls `0xd45b827900a`.
