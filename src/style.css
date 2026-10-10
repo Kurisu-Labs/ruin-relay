@@ -416,6 +416,11 @@ kbd {
 .draft-change {
   font-weight: 700;
 }
+.commit-help {
+  color: #c3cfc5;
+  font-size: 13px;
+  line-height: 1.6;
+}
 .mask {
   font-family: monospace;
   font-size: 11px;

@@ -43,13 +43,25 @@ export default function App() {
     run && tile !== undefined
       ? preview(run.snapshot.walls, run.snapshot.editableMask, tile)
       : undefined;
-  const canCommit =
-    escaped &&
-    !stale &&
-    state.online &&
-    draft?.solvable &&
-    !relay.locked &&
-    relay.coordinationAvailable;
+  const commitBlocker = !configured
+    ? 'This is a practice dungeon. You can preview one edit, but saving it needs a connected dungeon.'
+    : relay.locked
+      ? 'An edit is being prepared or checked. Wait for its status before committing again.'
+      : stale
+        ? ownRevision !== undefined
+          ? `Your edit is saved in revision #${ownRevision}. Choose Play latest and escape again to make another change.`
+          : 'The dungeon changed during your run. Choose Play latest and escape the new revision to save an edit.'
+        : !state.online || !live
+          ? 'The shared dungeon is unavailable. Choose Refresh status to reconnect before saving.'
+          : !relay.coordinationAvailable
+            ? state.recoveryError ||
+              'This browser cannot safely coordinate edits across tabs. Use a browser with Web Locks on HTTPS or localhost.'
+            : tile === undefined
+              ? 'Choose a highlighted floor to add a wall, or a highlighted wall to remove it.'
+              : !draft?.solvable
+                ? 'Choose a different tile. At least one route from START to EXIT must stay open.'
+                : undefined;
+  const canCommit = escaped && !commitBlocker;
   return (
     <>
       <header>
@@ -61,7 +73,9 @@ export default function App() {
           <a href="#history">History</a>
           <a href="#about">How it works</a>
         </nav>
-        <span className="network">● {deployment.local ? 'Local Anvil' : 'Arbitrum Sepolia'}</span>
+        <span className="network">
+          ● {!configured ? 'Practice' : deployment.local ? 'Local Anvil' : 'Arbitrum Sepolia'}
+        </span>
       </header>
       <main>
         <section className="hero">
@@ -168,7 +182,7 @@ export default function App() {
               )}
               {!configured && (
                 <p className="notice">
-                  Practice seed · deployment not configured. Commits are unavailable.
+                  Practice dungeon · play and preview edits here. Saving a change is unavailable.
                 </p>
               )}
               {configured && !relay.coordinationAvailable && (
@@ -191,8 +205,9 @@ export default function App() {
               {escaped && (
                 <div className="editor">
                   <p>
-                    You escaped Revision #{run.snapshot.revision.toString()}. Choose one tile to
-                    change.
+                    You escaped Revision #{run.snapshot.revision.toString()}. Select one highlighted
+                    floor to add a wall, or a wall to turn it into floor. Dim tiles are fixed. Leave
+                    at least one escape route open.
                   </p>
                   <div className="tile-picker" aria-label="Editable tiles">
                     {Array.from({ length: 49 }, (_, i) => (
@@ -214,6 +229,7 @@ export default function App() {
                         Tile {tile}:{' '}
                         {wallAt(run.snapshot.walls, tile!) ? 'Wall → Floor' : 'Floor → Wall'}
                       </p>
+                      <p className="muted">Preview only · your change has not been saved.</p>
                       <p className={draft.solvable ? 'valid' : 'notice'}>
                         {draft.solvable
                           ? 'Your edit keeps an escape route open.'
@@ -229,10 +245,15 @@ export default function App() {
                   <button
                     className="primary wide"
                     disabled={!canCommit}
+                    aria-describedby="commit-help"
                     onClick={() => void relay.prepare()}
                   >
                     Commit one change
                   </button>
+                  <p id="commit-help" className="commit-help" role="status">
+                    {commitBlocker ||
+                      'Ready to review. Commit one change connects your wallet and estimates the transaction. Nothing is submitted until you choose Sign and submit edit.'}
+                  </p>
                   <button
                     disabled={relay.locked || tile === undefined}
                     onClick={() => relay.select(undefined)}
@@ -340,8 +361,9 @@ export default function App() {
               </p>
             ))}
           <p className="public-meta">
-            Chain ID 421614 ·{' '}
-            {deployment.local ? 'Local test deployment' : 'Arbitrum Sepolia testnet'}
+            {configured
+              ? `Chain ID 421614 · ${deployment.local ? 'Local test deployment' : 'Arbitrum Sepolia testnet'}`
+              : 'Practice seed · no blockchain deployment connected'}
             {deployment.address && (
               <>
                 {' '}
