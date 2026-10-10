@@ -1,0 +1,493 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root {
+  font-family: 'DM Sans', sans-serif;
+  color: #d9e4de;
+  background: #101719;
+  font-synthesis: none;
+  font-weight: 400;
+  line-height: 1.6;
+  color-scheme: dark;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 30px;
+}
+body {
+  margin: 0;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+button,
+input,
+.button {
+  font: inherit;
+}
+button,
+.button {
+  border: 1px solid #42514e;
+  border-radius: 5px;
+  background: #1e2a2c;
+  color: #e5eee9;
+  padding: 10px 17px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.3;
+}
+button:hover:enabled,
+.button:hover {
+  background: #2e4240;
+  text-decoration: none;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.primary {
+  background: #b9d9a3;
+  color: #172622;
+  border-color: #b9d9a3;
+  font-weight: 700;
+}
+.primary:hover:enabled,
+.button.primary:hover {
+  background: #d1e9bc;
+}
+.wide {
+  width: 100%;
+  margin: 12px 0;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+.board:focus-visible {
+  outline: 3px solid #e8c98b;
+  outline-offset: 4px;
+}
+header {
+  max-width: 1260px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  padding: 27px 40px;
+  border-bottom: 1px solid #293638;
+}
+.brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+nav {
+  display: flex;
+  gap: 28px;
+  font-size: 13px;
+  color: #a9bbb3;
+}
+.network {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: #b9d9a3;
+  padding: 5px 10px;
+  border: 1px solid #344a42;
+  border-radius: 30px;
+}
+main {
+  max-width: 1180px;
+  margin: auto;
+  padding: 0 38px;
+}
+.hero {
+  position: relative;
+  min-height: 510px;
+  padding: 70px 0 65px;
+  overflow: hidden;
+}
+.eyebrow {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a3b5a9;
+  margin: 0 0 18px;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0 0 22px;
+}
+h1 {
+  font-size: clamp(44px, 5.9vw, 76px);
+  letter-spacing: -3px;
+}
+h1 em {
+  font-style: normal;
+  color: #b9d9a3;
+}
+h2 {
+  font-size: 30px;
+  letter-spacing: -1px;
+}
+h3 {
+  font-size: 25px;
+  letter-spacing: -0.6px;
+}
+h4 {
+  font-size: 20px;
+}
+.hero > p:not(.eyebrow) {
+  color: #a9bbb3;
+  font-size: 15px;
+  max-width: 310px;
+}
+.hero .button {
+  display: inline-flex;
+  gap: 50px;
+  margin-top: 18px;
+  padding: 15px 20px;
+}
+.hero-note {
+  display: block;
+  font-size: 10px;
+  color: #84978f;
+  margin-top: 17px;
+}
+.hero-mark {
+  position: absolute;
+  right: 5%;
+  top: -60px;
+  font-size: 540px;
+  font-family: monospace;
+  line-height: 1.3;
+  transform: rotate(-8deg);
+  color: #1d2c2b;
+  z-index: -1;
+}
+.hero {
+  isolation: isolate;
+}
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 25px;
+}
+.section-heading h2 {
+  margin: 0;
+}
+.revision {
+  font-family: monospace;
+  white-space: nowrap;
+  color: #e3c58e;
+  font-size: 12px;
+}
+.game-section {
+  border-top: 1px solid #33413f;
+  padding: 35px 0 55px;
+}
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 1fr);
+  gap: 34px;
+  align-items: start;
+}
+.board-shell {
+  padding: 14px;
+  background: #141d1f;
+  border: 1px solid #33413f;
+  border-radius: 8px;
+  min-width: 0;
+}
+.board {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+}
+.board canvas {
+  display: block !important;
+}
+.board-placeholder {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  padding: 40px;
+  text-align: center;
+  color: #9eb1a8;
+}
+.legend {
+  display: flex;
+  justify-content: space-around;
+  font-size: 11px;
+  color: #99aca2;
+  margin: 15px 0 5px;
+}
+.panel {
+  background: #172123;
+  padding: 25px;
+  border: 1px solid #33413f;
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 0;
+}
+.panel h3 {
+  margin-bottom: 17px;
+}
+.steps {
+  font-family: monospace;
+  font-size: 18px;
+  color: #e5cf9e;
+}
+.muted {
+  color: #96aaa0;
+  font-size: 13px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0;
+}
+.actions button {
+  font-size: 12px;
+  padding: 9px 11px;
+}
+kbd {
+  font: 11px monospace;
+  color: #dfe6dc;
+  border: 1px solid #42534e;
+  border-radius: 3px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}
+.notice {
+  color: #f0c99f;
+  background: #352a22;
+  border-left: 2px solid #bd8b5d;
+  padding: 11px 13px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.valid {
+  color: #b9d9a3;
+}
+.tile-picker {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin: 17px 0;
+}
+.tile-picker button {
+  padding: 0;
+  aspect-ratio: 1;
+  font: 11px monospace;
+  border: 1px solid #3a4b47;
+  border-radius: 3px;
+}
+.tile-picker .wall {
+  background: #3a4643;
+}
+.tile-picker .floor {
+  background: #142020;
+}
+.tile-picker .selected {
+  outline: 2px solid #e8c98b;
+  outline-offset: 1px;
+  color: #f0d59a;
+}
+.tile-picker button:disabled {
+  opacity: 0.22;
+}
+.draft-change {
+  font-weight: 700;
+}
+.mask {
+  font-family: monospace;
+  font-size: 11px;
+  color: #9bafa5;
+}
+.sign-summary {
+  border-top: 1px solid #42534e;
+  margin-top: 24px;
+  padding-top: 24px;
+  overflow-wrap: anywhere;
+}
+.transaction,
+.success {
+  margin-top: 25px;
+  padding: 22px;
+  background: #1a2826;
+  border: 1px solid #3c5550;
+  border-radius: 5px;
+  font-size: 13px;
+}
+.transaction p {
+  max-width: 750px;
+}
+.hash {
+  display: block;
+  font: 11px monospace;
+  overflow-wrap: anywhere;
+  color: #b9d9a3;
+  max-width: 100%;
+}
+.transaction form {
+  margin-top: 22px;
+  max-width: 650px;
+}
+.transaction label {
+  display: block;
+  margin-bottom: 8px;
+}
+.recovery {
+  display: flex;
+  gap: 10px;
+}
+.recovery input {
+  min-width: 0;
+  flex: 1;
+  padding: 10px;
+  background: #101719;
+  border: 1px solid #42534e;
+  border-radius: 5px;
+}
+.public-meta {
+  font-size: 11px;
+  color: #81978d;
+  margin-top: 24px;
+  overflow-wrap: anywhere;
+}
+#history,
+#about {
+  border-top: 1px solid #33413f;
+  padding: 45px 0 55px;
+}
+.history-list article {
+  display: grid;
+  grid-template-columns: 55px 1.1fr 1fr 1.2fr;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid #293a34;
+  font-size: 12px;
+  align-items: center;
+}
+.empty {
+  padding: 32px;
+  border: 1px dashed #3b4b43;
+  color: #9fb2a7;
+  font-size: 13px;
+}
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin: 45px 0;
+}
+.how-grid span {
+  font: 11px monospace;
+  color: #b9d9a3;
+}
+.how-grid h3 {
+  font-size: 22px;
+  margin-top: 16px;
+}
+.how-grid p {
+  color: #a8b9af;
+  font-size: 14px;
+}
+footer {
+  max-width: 1260px;
+  margin: auto;
+  padding: 25px 40px 35px;
+  border-top: 1px solid #33413f;
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  font-size: 10px;
+  color: #91a297;
+}
+section {
+  scroll-margin-top: 25px;
+}
+@media (max-width: 760px) {
+  header {
+    padding: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  nav {
+    order: 3;
+    width: 100%;
+    gap: 25px;
+  }
+  .network {
+    font-size: 10px;
+  }
+  main {
+    padding: 0 20px;
+  }
+  .hero {
+    padding-top: 48px;
+    min-height: 490px;
+  }
+  h1 {
+    letter-spacing: -2px;
+  }
+  .hero-mark {
+    font-size: 350px;
+    right: -90px;
+    top: 40px;
+  }
+  .game-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .section-heading {
+    align-items: start;
+  }
+  .section-heading h2 {
+    font-size: 24px;
+  }
+  .panel {
+    padding: 20px;
+  }
+  .how-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .history-list article {
+    grid-template-columns: 40px 1fr;
+  }
+  .history-list .hash {
+    grid-column: 1/-1;
+  }
+  .section-heading button {
+    max-width: 140px;
+  }
+  .recovery {
+    flex-direction: column;
+  }
+  footer {
+    padding: 25px 20px;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
