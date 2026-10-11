@@ -163,7 +163,7 @@ export function explain(error: unknown) {
   if (/TileNotEditable/i.test(info.text))
     return 'Choose an editable tile. The transaction was not broadcast.';
   if (
-    /journal|recovery|coordination|already in progress|ambiguous|unrelated|configured/i.test(
+    /journal|recovery|coordination|already in progress|ambiguous|unrelated|configured|run or edit changed/i.test(
       info.text,
     )
   )
