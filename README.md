@@ -51,6 +51,22 @@ node scripts/sepolia.mjs verify
 npm run dev
 ```
 
+For a wallet already installed in Firefox, run the local operator helper with its public address:
+
+```sh
+node scripts/browser-deploy.mjs --account 0x37714b787066ce967d027B752D045e13b8b64A84
+```
+
+Open `http://127.0.0.1:4174/` in that Firefox profile. Connect, estimate, and deliberately approve the deployment in the wallet. The helper checks the account and chain, refreshes an EIP-1559 cap of twice the latest base fee plus priority immediately before signing, and saves the intent before requesting a signature. It never reads wallet keys or automatically resubmits. Keep the returned hash for receipt/source verification.
+
+If the operator confirmed that an earlier request failed with a fee-below-base-fee rejection and no pending transaction, the known rejected nonce can enable a separate read-only recovery action:
+
+```sh
+node scripts/browser-deploy.mjs --account 0x37714b787066ce967d027B752D045e13b8b64A84 --recover-rejected-nonce 0
+```
+
+Startup and the manual **Reset rejected fee request** action both require that nonce to remain unused at `latest` and `pending`. Reset archives the failed intent and sends no transaction. It applies to the confirmed legacy rejection or a recorded fee rejection; a new unknown signing request or known hash stays locked. Re-estimate and sign only as a separate deliberate action. This is an operator-only localhost tool, separate from the game.
+
 The two generated wallets are stored in `.local/sepolia-wallets.json`, with directory mode 700 and file mode 600, and are excluded from Git. They are **throwaway testnet wallets**. Keys are plaintext local operator secrets; protect the machine and never use them for mainnet. They never enter the Vite bundle, and the development server denies requests into `.local/`. Re-running setup preserves the wallets. The deploy script checks the network, records the intended nonce before broadcast, and resumes a recorded deployment instead of silently deploying again. A lost hash requires explicit recovery from wallet/explorer evidence.
 
 Fund wallet A and B with **Arbitrum Sepolia ETH**, chain ID **421614**, before a new deploy or browser mutation. Arbitrum's [chain information and faucet list](https://docs.arbitrum.io/chain-info#faucet-list) identifies public RPCs and faucets. The checked faucet requires address eligibility/BringID verification; obtaining test ETH can require a human wallet/login step. Public wallet addresses and the recorded deployment are in [release evidence](docs/release-evidence.md).

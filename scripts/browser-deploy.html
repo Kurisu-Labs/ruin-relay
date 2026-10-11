@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:," />
+  <title>Ruin Relay — Sepolia deployment</title>
+  <style>
+    body {
+      max-width: 820px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background: #101919;
+      color: #eef3e8;
+      font: 16px/1.6 system-ui;
+    }
+    button {
+      margin: 8px 8px 8px 0;
+      padding: 12px 16px;
+      font: inherit;
+      cursor: pointer;
+    }
+    button:disabled {
+      cursor: default;
+      opacity: 0.5;
+    }
+    code,
+    pre {
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+    a {
+      color: #b9d79a;
+    }
+    textarea {
+      width: 100%;
+      height: 160px;
+      box-sizing: border-box;
+    }
+    #status {
+      padding: 16px;
+      border: 1px solid #b9d79a;
+    }
+    dt {
+      font-weight: 700;
+    }
+    dd {
+      margin: 0 0 12px;
+    }
+    small {
+      color: #c3cfc8;
+    }
+  </style>
+  <h1>Deploy the canonical Ruin Relay dungeon</h1>
+  <p>
+    Operator tool · Arbitrum Sepolia testnet only. This page requests a contract-creation
+    transaction from wallet A. The wallet asks you to review and approve it.
+  </p>
+  <dl id="details"></dl>
+  <button id="connect">1. Connect wallet A</button>
+  <button id="prepare" disabled>2. Estimate deployment</button>
+  <button id="deploy" disabled>3. Sign and deploy</button>
+  <button id="recover" hidden>Reset rejected fee request (no resend)</button>
+  <p id="estimate"></p>
+  <p id="status" role="status">Loading the unsigned deployment request…</p>
+  <p id="hash"></p>
+  <details>
+    <summary>Review the exact unsigned wallet request</summary>
+    <textarea id="request" readonly aria-label="Unsigned wallet request"></textarea>
+  </details>
+  <p>
+    <small
+      >A returned hash is not verified deployment success. Keep its explorer receipt and send the
+      hash back to the coding chat for canonical receipt, source, and configuration verification.
+      This tool never automatically resubmits an unknown deployment.</small
+    >
+  </p>
+  <script type="module">
+    const config = await (await fetch('/unsigned-deployment.json')).json();
+    const tx = config.walletRequest.params[0];
+    const $ = (id) => document.getElementById(id);
+    const key = `ruin-relay:operator-deploy:${config.chainId}:${tx.from.toLowerCase()}:${config.constructor.initialWalls}:${config.constructor.editableMask}`;
+    let journal,
+      busy = false,
+      connected = false,
+      prepared = false,
+      storageOK = true;
+    $('request').value = JSON.stringify(config.walletRequest, null, 2);
+    for (const [label, value] of Object.entries({
+      Network: `Arbitrum Sepolia (${config.chainId})`,
+      Deployer: tx.from,
+      Contract: 'RuinRelay — fresh canonical dungeon, revision 0',
+      'Initial walls': config.constructor.initialWalls,
+      'Editable mask': config.constructor.editableMask,
+      Compiler: `Solidity ${config.compiler}; optimizer ${config.optimizerRuns}; EVM ${config.evmVersion}`,
+      Value: '0 ETH; wallet-estimated testnet gas only',
+    })) {
+      const dt = document.createElement('dt'),
+        dd = document.createElement('dd');
+      dt.textContent = label;
+      dd.textContent = value;
+      $('details').append(dt, dd);
+    }
+    function render() {
+      $('connect').disabled = busy || Boolean(journal) || !storageOK;
+      $('prepare').disabled = busy || Boolean(journal) || !connected || !storageOK;
+      $('deploy').disabled = busy || Boolean(journal) || !prepared || !storageOK;
+      $('recover').hidden = !recoverableFeeRejection();
+      $('recover').disabled = busy || !storageOK;
+      $('hash').replaceChildren();
+      if (journal?.hash) {
+        const link = document.createElement('a');
+        link.href = `https://sepolia.arbiscan.io/tx/${journal.hash}`;
+        link.textContent = journal.hash;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        $('hash').append('Transaction hash: ', link);
+      }
+    }
+    function recoverableFeeRejection() {
+      return (
+        config.recovery &&
+        journal &&
+        !journal.hash &&
+        ((journal.nonce === undefined && journal.fees === undefined) ||
+          journal.rejection === 'fee-below-base')
+      );
+    }
+    async function checkedWallet() {
+      if (!window.ethereum?.request)
+        throw new Error(
+          'No injected wallet found. Open this page in Firefox with your wallet extension enabled.',
+        );
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts[0]?.toLowerCase() !== tx.from.toLowerCase())
+        throw new Error(`Select wallet A: ${tx.from}`);
+      const chain = await window.ethereum.request({ method: 'eth_chainId' });
+      if (BigInt(chain) !== BigInt(config.chainId))
+        throw new Error('Switch the wallet to Arbitrum Sepolia (421614), then connect again.');
+      return window.ethereum;
+    }
+    try {
+      const raw = localStorage.getItem(key);
+      journal = raw ? JSON.parse(raw) : undefined;
+      if (
+        journal &&
+        (journal.account !== tx.from ||
+          journal.chainId !== config.chainId ||
+          journal.data !== tx.data)
+      )
+        throw new Error('Deployment journal does not match this request.');
+      $('status').textContent = journal
+        ? journal.hash
+          ? 'A transaction hash was already returned. Deployment stays locked; verify this hash before proceeding.'
+          : 'An earlier signing request has an unknown outcome. Check your wallet/explorer; do not deploy again.'
+        : 'Ready. Connect wallet A on Arbitrum Sepolia.';
+    } catch (error) {
+      storageOK = false;
+      $('status').textContent =
+        `Recovery storage unavailable. No signing allowed. ${error.message}`;
+    }
+    render();
+    async function feeCap(wallet) {
+      const block = await wallet.request({
+        method: 'eth_getBlockByNumber',
+        params: ['latest', false],
+      });
+      if (block.baseFeePerGas == null)
+        throw new Error('Cannot read the latest base fee. No signing request sent.');
+      let priority = 0n;
+      try {
+        priority = BigInt(await wallet.request({ method: 'eth_maxPriorityFeePerGas' }));
+      } catch {
+        /* Zero priority is valid on Arbitrum; the base-fee read is required. */
+      }
+      const cap = 2n * BigInt(block.baseFeePerGas) + priority;
+      return {
+        maxFeePerGas: '0x' + cap.toString(16),
+        maxPriorityFeePerGas: '0x' + priority.toString(16),
+      };
+    }
+    $('recover').onclick = async () => {
+      if (busy || !recoverableFeeRejection() || !storageOK) return;
+      busy = true;
+      render();
+      try {
+        if (!window.ethereum?.request)
+          throw new Error('Open this page in Firefox with the wallet extension enabled.');
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const wallet = await checkedWallet();
+        const [latest, pending] = await Promise.all(
+          ['latest', 'pending'].map((tag) =>
+            wallet.request({ method: 'eth_getTransactionCount', params: [tx.from, tag] }),
+          ),
+        );
+        if (
+          BigInt(latest) !== BigInt(config.recovery.nonce) ||
+          BigInt(pending) !== BigInt(config.recovery.nonce)
+        )
+          throw new Error(
+            'The rejected nonce is no longer unused. Keep the lock and inspect the transaction.',
+          );
+        localStorage.setItem(
+          key + ':rejected-fee:' + Date.now(),
+          JSON.stringify({ ...journal, rejection: config.recovery.reason }),
+        );
+        localStorage.removeItem(key);
+        journal = undefined;
+        connected = true;
+        prepared = false;
+        $('status').textContent =
+          'Rejected fee attempt preserved. Estimate again; no transaction has been sent.';
+      } catch (error) {
+        $('status').textContent = error.message;
+      } finally {
+        busy = false;
+        render();
+      }
+    };
+    $('connect').onclick = async () => {
+      busy = true;
+      connected = false;
+      prepared = false;
+      render();
+      try {
+        if (!window.ethereum?.request)
+          throw new Error('Open this page in Firefox with your wallet extension enabled.');
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        await checkedWallet();
+        connected = true;
+        $('status').textContent =
+          'Wallet A and Arbitrum Sepolia verified. Estimate before signing.';
+      } catch (error) {
+        $('status').textContent = error.message;
+      } finally {
+        busy = false;
+        render();
+      }
+    };
+    $('prepare').onclick = async () => {
+      busy = true;
+      prepared = false;
+      render();
+      try {
+        const wallet = await checkedWallet();
+        const gas = BigInt(await wallet.request({ method: 'eth_estimateGas', params: [tx] }));
+        const price = BigInt(await wallet.request({ method: 'eth_gasPrice' }));
+        const fees = await feeCap(wallet);
+        const fee = (gas * price).toString().padStart(19, '0');
+        $('estimate').textContent =
+          `Estimated gas: ${gas}. Approximate test ETH fee: ${fee.slice(0, -18)}.${fee.slice(-18)}. Max fee per gas cap: ${BigInt(fees.maxFeePerGas)} wei (twice the latest base fee plus priority). Review the final fee in your wallet.`;
+        $('request').value = JSON.stringify(
+          { method: 'eth_sendTransaction', params: [{ ...tx, ...fees }] },
+          null,
+          2,
+        );
+        prepared = true;
+        $('status').textContent = 'Ready to request a signature. No transaction has been sent.';
+      } catch (error) {
+        $('status').textContent = error.message;
+      } finally {
+        busy = false;
+        render();
+      }
+    };
+    $('deploy').onclick = async () => {
+      if (busy || journal || !prepared || !storageOK) return;
+      busy = true;
+      render();
+      let issued = false;
+      try {
+        const wallet = await checkedWallet();
+        const fees = await feeCap(wallet);
+        const nonce = await wallet.request({
+          method: 'eth_getTransactionCount',
+          params: [tx.from, 'pending'],
+        });
+        if (config.recovery && BigInt(nonce) !== BigInt(config.recovery.nonce))
+          throw new Error(
+            'The rejected nonce changed. Keep the lock and inspect wallet/explorer evidence.',
+          );
+        const request = { method: 'eth_sendTransaction', params: [{ ...tx, ...fees, nonce }] };
+        const intent = {
+          account: tx.from,
+          chainId: config.chainId,
+          data: tx.data,
+          state: 'signing',
+          nonce,
+          fees,
+          createdAt: new Date().toISOString(),
+        };
+        localStorage.setItem(key, JSON.stringify(intent));
+        journal = intent;
+        render();
+        $('status').textContent = 'Waiting for wallet approval. Do not start another deployment.';
+        issued = true;
+        $('request').value = JSON.stringify(request, null, 2);
+        const hash = await wallet.request(request);
+        if (!/^0x[0-9a-f]{64}$/i.test(hash))
+          throw new Error(
+            'Wallet returned no valid hash. Preserve wallet evidence; outcome is unknown.',
+          );
+        journal = { ...journal, state: 'pending', hash };
+        try {
+          localStorage.setItem(key, JSON.stringify(journal));
+          $('status').textContent =
+            'Transaction hash received. Send it to the coding chat for verification.';
+        } catch {
+          $('status').textContent =
+            'Hash persistence failed. Copy the visible hash now. Do not deploy again.';
+        }
+      } catch (error) {
+        if (
+          issued &&
+          journal &&
+          !journal.hash &&
+          /max fee per gas less than block base fee|fee cap less than block base fee/i.test(
+            error.message,
+          ) &&
+          !/timeout|timed out|response lost|already known/i.test(error.message)
+        ) {
+          journal = { ...journal, rejection: 'fee-below-base', error: error.message };
+          try {
+            localStorage.setItem(key, JSON.stringify(journal));
+          } catch {
+            /* Keep proof in memory. */
+          }
+        }
+        if (issued && error.code === 4001) {
+          try {
+            localStorage.removeItem(key);
+            journal = undefined;
+            $('status').textContent =
+              'Wallet request rejected. No deployment claimed; you may retry deliberately.';
+          } catch {
+            $('status').textContent =
+              'Wallet rejected, but recovery storage failed. Keep the deployment locked and retain your wallet evidence.';
+          }
+        } else if (!issued) {
+          $('status').textContent = `No signing request sent. ${error.message}`;
+        } else {
+          $('status').textContent =
+            `Outcome unknown. Keep wallet/explorer evidence; do not deploy again. ${error.message}`;
+        }
+      } finally {
+        busy = false;
+        render();
+      }
+    };
+  </script>
+</html>

@@ -68,6 +68,12 @@ At 11:35:37 WIB, the live dungeon was revision **3**, walls `0xc05f827900a`, wit
 
 The [machine-readable audit](official-chain-audit.json) retains transaction inputs, senders, inclusion blocks/hashes, events, and gas. The required separate-profile, two-wallet, tile 31 → tile 38 sequence on a fresh deployment remains pending. Existing live revisions cannot be reset; the prepared acceptance wallets must use a fresh canonical deployment for that sequence. Browser-profile provenance and release videos cannot be inferred from chain receipts.
 
+### Firefox operator helper
+
+The first local helper delegated fee selection to the wallet. A deterministic browser replay reproduced the reported rejection (`maxFeePerGas: 39042000`, `baseFee: 39186000`). The maintained helper now sends explicit buffered EIP-1559 caps, refreshed immediately before signing. It does not depend on the earlier gas-price quote. The operator confirmed the failed deployment had no pending wallet transaction; nonce 0 was also unused at both `latest` and `pending` when checked.
+
+Nine focused operator-browser regressions passed on 11 October 2026: stale/rising base fees, wrong account/network, initial storage failure, hash persistence across reload, manual legacy recovery without resubmission, refusal to recover an in-flight nonce or a new unknown signing request, and private-file isolation. Wallet responses in these tests are simulated boundary responses; no real deployment is claimed by those tests. The helper and restart/recovery commands are documented in the README.
+
 ## Rehearsal copy
 
 Measured on a separate Arbitrum Sepolia copy, [`0x57b7461dc06dda9e11159c0e75306e1655545a64`](https://sepolia.arbiscan.io/address/0x57b7461dc06dda9e11159c0e75306e1655545a64). **Label: rehearsal.** These receipts are rehearsal evidence. The browser release gate still requires both mutations on the official contract above.
