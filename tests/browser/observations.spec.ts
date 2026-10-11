@@ -82,8 +82,10 @@ test('a pending edit that loses the revision race has a reverted receipt and no 
   await direct(0n, 0x59afba5156n, 20, 31, 1);
   const original = wallet.requests[0].params[0];
   const hash = await rpc('eth_sendTransaction', [original]);
-  await page.getByLabel('Recover with transaction hash').fill(hash);
-  await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
+  // Rebroadcast retains the known hash, so automatic receipt tracking owns recovery.
+  expect(hash).toBe(wallet.hash);
+  const receipt = await rpc('eth_getTransactionReceipt', [hash]);
+  expect(receipt.status).toBe('0x0');
   await expect(page.getByText('COMMIT ATTEMPT · REVERTED')).toBeVisible();
   await expect(page.locator('.transaction')).toContainText(
     'Someone changed the dungeon first. Play latest to try the new revision.',
@@ -97,6 +99,7 @@ test('a pending edit that loses the revision race has a reverted receipt and no 
   await page.getByRole('button', { name: 'Play latest', exact: true }).click();
   await expect(page.getByText('Playing revision 1 · Live revision 1')).toBeVisible();
   await expect(page.getByText('Steps 0 / 96')).toBeVisible();
+  expect(wallet.requests).toHaveLength(1);
 });
 
 test('cached success stays unverified when atomic coordination disappears', async ({ page }) => {

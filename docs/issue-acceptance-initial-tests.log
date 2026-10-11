@@ -1,0 +1,191 @@
+
+> ruin-relay@0.1.0 test
+> npm run typecheck && npm run test:contract && npm run test:rules && npm run test:browser
+
+
+> ruin-relay@0.1.0 typecheck
+> tsc --noEmit
+
+
+> ruin-relay@0.1.0 test:contract
+> node scripts/foundry.mjs forge test --root contracts
+
+No files changed, compilation skipped
+
+Ran 11 tests for test/RuinRelay.t.sol:RuinRelayTest
+[PASS] testCanonicalSeed() (gas: 78300)
+[PASS] testErrorsAndRevertPreserveState() (gas: 184475)
+[PASS] testFuzzInvalidCallsPreserveOrAdvanceExactlyOnce(uint64,uint256,uint8,uint8) (runs: 256, μ: 12476, ~: 12479)
+[PASS] testFuzzMutationSequences(uint256) (runs: 256, μ: 31385424, ~: 30626222)
+[PASS] testFuzzSolvabilityAgainstIndependentOracle(uint64) (runs: 256, μ: 923847, ~: 6033)
+[PASS] testGasOpenBoard96Steps() (gas: 755452)
+[PASS] testRejectInvalidConfigurations() (gas: 326621)
+[PASS] testRevisitsAnd96MoveBoundary() (gas: 158433)
+[PASS] testSolvabilityQueryMalformedMasks() (gas: 142576)
+[PASS] testStaleRaceAndNonpayability() (gas: 115593)
+[PASS] testTwoContributorsMatchFixturesAndEvents() (gas: 196628)
+Suite result: ok. 11 passed; 0 failed; 0 skipped; finished in 6.58s (6.86s CPU time)
+
+Ran 1 test suite in 6.59s (6.58s CPU time): 11 tests passed, 0 failed, 0 skipped (11 total tests)
+
+> ruin-relay@0.1.0 test:rules
+> vitest run
+
+
+ RUN  v5.0.3 /home/boyaditya/Coding/ruin-relay
+
+
+ Test Files  3 passed (3)
+      Tests  16 passed (16)
+   Start at  20:25:42
+   Duration  527ms (import 74%, transform 17%, tests 6%, worker 3%)
+
+
+> ruin-relay@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:110308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:110412) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 86 tests using 1 worker
+
+(node:110456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/browser/ambiguity.spec.ts:3:1 › a gapped nonce substitution is not an in-flight commit on the sequencer nonce (3.4s)
+  ✓   2 tests/browser/commit.spec.ts:3:1 › two wallet profiles contribute the exact canonical revisions and public history (5.9s)
+  ✓   3 tests/browser/commit.spec.ts:31:1 › a stale run stays frozen, Restart repeats it, and Play latest adopts the live dungeon (3.0s)
+  ✓   4 tests/browser/commit.spec.ts:50:1 › explicit wallet rejection restores the run and tile without a success claim (4.4s)
+  ✓   5 tests/browser/commit.spec.ts:79:1 › pending attempts survive reload and status reads never resubmit (4.4s)
+  ✓   6 tests/browser/commit.spec.ts:98:1 › a lost wallet response is confirmed when its mined event matches the attempt (3.2s)
+  ✓   7 tests/browser/commit.spec.ts:115:1 › atomic same-profile claim allows one signing request across two accounts (5.7s)
+  ✓   8 tests/browser/deploy-operator.spec.ts:112:3 › operator deployment buffers a stale gas-price quote and refreshes before signing: success (428ms)
+  ✓   9 tests/browser/deploy-operator.spec.ts:112:3 › operator deployment buffers a stale gas-price quote and refreshes before signing: rising-base (290ms)
+  ✓  10 tests/browser/deploy-operator.spec.ts:142:3 › operator deployment blocks unsafe signing: wrong-account (159ms)
+  ✓  11 tests/browser/deploy-operator.spec.ts:142:3 › operator deployment blocks unsafe signing: wrong-network (169ms)
+  ✓  12 tests/browser/deploy-operator.spec.ts:142:3 › operator deployment blocks unsafe signing: storage-failure (230ms)
+  ✓  13 tests/browser/deploy-operator.spec.ts:159:1 › operator manual fee recovery preserves the failed intent and never resends (158ms)
+  ✓  14 tests/browser/deploy-operator.spec.ts:178:1 › operator manual fee recovery remains locked when the nonce is in flight (163ms)
+  ✓  15 tests/browser/deploy-operator.spec.ts:188:1 › operator legacy recovery cannot clear a new unresolved signing request (129ms)
+  ✓  16 tests/browser/deploy-operator.spec.ts:201:1 › operator server serves only public deployment artifacts (18ms)
+  ✓  17 tests/browser/draft-coordination.spec.ts:6:3 › adopting another tab draft discards a ready transaction preview after wallet rejection (6.3s)
+  ✓  18 tests/browser/draft-coordination.spec.ts:6:3 › adopting another tab draft discards a estimating transaction preview after wallet rejection (9.4s)
+  ✓  19 tests/browser/failed-commit.spec.ts:43:1 › a node fee rejection before broadcast restores the draft and survives reload (4.8s)
+  ✓  20 tests/browser/failed-commit.spec.ts:73:1 › nonce too low after a lost successful response recovers the canonical mutation (4.5s)
+  ✓  21 tests/browser/failed-commit.spec.ts:116:3 › a insufficient funds error before broadcast restores the draft and survives reload (4.3s)
+  ✓  22 tests/browser/failed-commit.spec.ts:116:3 › a simulation revert error before broadcast restores the draft and survives reload (4.3s)
+  ✓  23 tests/browser/failed-commit.spec.ts:130:1 › a reverted receipt for another cause releases the lock and survives reload (5.7s)
+  ✓  24 tests/browser/failed-commit.spec.ts:168:1 › a timeout that never reached the node is released when nothing is in flight (5.1s)
+  ✓  25 tests/browser/game.spec.ts:3:1 › rapid keys are applied once even when animation frames pause (2.8s)
+  ✓  26 tests/browser/game.spec.ts:16:1 › wallet-free escape opens a one-tile editor with a bounded solvability preview (2.7s)
+  ✓  27 tests/browser/hashless.spec.ts:56:1 › a legacy hashless journal unlocks when another wallet has moved the revision (3.1s)
+  ✓  28 tests/browser/hashless.spec.ts:84:1 › a legacy hashless journal is confirmed when the account mutated snapshot+1 (3.1s)
+  ✓  29 tests/browser/hashless.spec.ts:141:1 › hashless recovery uses bounded log windows on an aged deployment (2.1s)
+  ✓  30 tests/browser/hashless.spec.ts:153:1 › a failed bounded recovery window cannot prove no mutation occurred (2.1s)
+  ✓  31 tests/browser/hashless.spec.ts:165:1 › duplicate canonical recovery logs confirm one own mutation (2.4s)
+  ✓  32 tests/browser/hashless.spec.ts:183:1 › a legacy hashless journal with the same revision unlocks when nothing is in flight (3.3s)
+  ✓  33 tests/browser/hashless.spec.ts:206:1 › a legacy hashless journal stays locked while the account has a pending transaction (2.8s)
+  ✓  34 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with empty history are unavailable, not empty or complete (2.7s)
+  ✓  35 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-latest history are unavailable, not empty or complete (2.8s)
+  ✓  36 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-earlier history are unavailable, not empty or complete (2.9s)
+  ✓  37 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with wrong-mask history are unavailable, not empty or complete (3.6s)
+  ✓  38 tests/browser/history-integrity.spec.ts:42:1 › complete history keeps only the ten newest revisions (2.1s)
+  ✓  39 tests/browser/independent-race.spec.ts:5:1 › independent profiles racing after simulation produce one mutation and a stale loser (9.9s)
+  ✓  40 tests/browser/observations.spec.ts:6:1 › history failure leaves current-state play usable and duplicate logs produce one row (3.4s)
+  ✓  41 tests/browser/observations.spec.ts:35:1 › offline local play remains available but cannot commit until fresh observation (3.2s)
+  ✓  42 tests/browser/observations.spec.ts:51:1 › cached success is checked again before displaying a current confirmation (3.6s)
+  ✘  43 tests/browser/observations.spec.ts:70:1 › a pending edit that loses the revision race has a reverted receipt and no contribution (45.5s)
+(node:113256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  44 tests/browser/observations.spec.ts:102:1 › cached success stays unverified when atomic coordination disappears (3.0s)
+  ✓  45 tests/browser/observations.spec.ts:121:3 › a mismatched receipt hash cannot confirm the requested edit (4.0s)
+  ✓  46 tests/browser/observations.spec.ts:121:3 › a mismatched transaction hash cannot confirm the requested edit (6.1s)
+  ✓  47 tests/browser/observations.spec.ts:151:1 › the move cap freezes exploration and keyboard controls remain reachable (8.4s)
+  ✓  48 tests/browser/observations.spec.ts:167:1 › a narrow mobile viewport keeps the board and critical controls within the page (2.5s)
+  ✓  49 tests/browser/observations.spec.ts:177:1 › public rules API agrees with Solidity on random masks and direct unsolvable edits revert (201ms)
+[WebServer] The request id "/home/boyaditya/Coding/ruin-relay/.local/operator-file-canary.txt" is outside of Vite serving allow list.
+[WebServer] 
+[WebServer] - /home/boyaditya/Coding/ruin-relay
+[WebServer] 
+[WebServer] Refer to docs https://vite.dev/config/server-options.html#server-fs-allow for configurations and more details.
+[WebServer] 
+[WebServer] The request id "/home/boyaditya/Coding/ruin-relay/.local/operator-file-canary.txt" is outside of Vite serving allow list.
+  ✓  50 tests/browser/operator-files.spec.ts:4:1 › operator files are denied by the development server (22ms)
+  ✓  51 tests/browser/recovery-acceptance.spec.ts:4:3 › a manually linked pending speed-up survives reload and resolves from canonical inclusion (4.7s)
+  ✓  52 tests/browser/recovery-acceptance.spec.ts:4:3 › a manually linked pending cancellation survives reload and resolves from canonical inclusion (5.3s)
+  ✓  53 tests/browser/recovery-acceptance.spec.ts:61:1 › a same-sender cancellation cannot supply missing original nonce evidence (3.3s)
+  ✓  54 tests/browser/recovery.spec.ts:16:1 › initial journal failure blocks signing while keeping the local escape (3.0s)
+  ✓  55 tests/browser/recovery.spec.ts:33:1 › unreadable recovery storage blocks signing while current dungeon play remains available (3.0s)
+  ✓  56 tests/browser/recovery.spec.ts:51:1 › missing atomic coordination blocks Commit and preserves local gameplay (2.6s)
+  ✓  57 tests/browser/recovery.spec.ts:66:1 › a post-broadcast storage failure keeps the hash visible and the earlier journal locked on reload (4.5s)
+  ✓  58 tests/browser/recovery.spec.ts:90:1 › a wrong network requires switching before requesting a signature (2.9s)
+  ✓  59 tests/browser/recovery.spec.ts:103:1 › storage reads failing after broadcast retain the returned hash in memory (4.5s)
+  ✓  60 tests/browser/recovery.spec.ts:127:1 › wallet account changes before signing abort; changes after issue preserve the fixed attempt (3.9s)
+  ✓  61 tests/browser/recovery.spec.ts:156:1 › own contribution reconciles with a later mutation in the same block (5.1s)
+  ✓  62 tests/browser/recovery.spec.ts:195:3 › receipt editor mismatch cannot claim contribution success (4.2s)
+  ✓  63 tests/browser/recovery.spec.ts:195:3 › receipt contract mismatch cannot claim contribution success (6.6s)
+  ✓  64 tests/browser/recovery.spec.ts:195:3 › receipt revision mismatch cannot claim contribution success (3.6s)
+  ✓  65 tests/browser/recovery.spec.ts:195:3 › receipt tile mismatch cannot claim contribution success (3.9s)
+  ✓  66 tests/browser/recovery.spec.ts:195:3 › receipt mask mismatch cannot claim contribution success (2.8s)
+  ✓  67 tests/browser/recovery.spec.ts:195:3 › receipt becameWall mismatch cannot claim contribution success (3.7s)
+  ✓  68 tests/browser/recovery.spec.ts:195:3 › receipt missing mismatch cannot claim contribution success (8.7s)
+  ✓  69 tests/browser/recovery.spec.ts:236:1 › orphaned confirmation is withdrawn, locks the attempt, and removes orphaned history (6.6s)
+  ✓  70 tests/browser/recovery.spec.ts:253:1 › same revision with a different layout is stale while the run remains frozen (3.9s)
+  ✓  71 tests/browser/recovery.spec.ts:270:1 › offline observation withdraws cached success and keeps local play separate from history failure (4.5s)
+  ✓  72 tests/browser/reorg-recovery.spec.ts:3:1 › reorg and reinclusion synchronize contribution, history, and attempt locks across tabs and reload (7.9s)
+  ✓  73 tests/browser/reorg-recovery.spec.ts:52:3 › a cancellation survives reload, loses its terminal outcome on reorg, and verifies reinclusion (4.7s)
+  ✓  74 tests/browser/reorg-recovery.spec.ts:52:3 › a different action survives reload, loses its terminal outcome on reorg, and verifies reinclusion (5.6s)
+  ✓  75 tests/browser/replacement.spec.ts:3:1 › speed-up recovery uses verified original metadata when RPC stops returning the original transaction (5.2s)
+  ✓  76 tests/browser/replacement.spec.ts:44:1 › a verified speed-up is followed automatically through its replacement hash (13.4s)
+  ✓  77 tests/browser/replacement.spec.ts:81:3 › a manually recovered cancellation ends the original attempt only after canonical inclusion (12.8s)
+  ✓  78 tests/browser/replacement.spec.ts:81:3 › a manually recovered different action ends the original attempt only after canonical inclusion (11.1s)
+  ✓  79 tests/browser/replacement.spec.ts:118:1 › an unrelated hash does not resolve a lost response that is still in flight (10.5s)
+  ✓  80 tests/browser/replacement.spec.ts:142:1 › closing the signing tab releases a prompt that never broadcast (10.4s)
+  ✓  81 tests/browser/replacement.spec.ts:162:1 › a tab with unsaved status preserves replacement evidence recorded by another tab (11.8s)
+  ✓  82 tests/browser/replacement.spec.ts:215:1 › wrong-sender transaction metadata cannot supply original nonce evidence (5.4s)
+  ✓  83 tests/browser/status.spec.ts:3:1 › an open wallet request stays signing and does not offer hash recovery (9.3s)
+  ✓  84 tests/browser/status.spec.ts:29:1 › reloading while the wallet request is open releases it when nothing was broadcast (5.3s)
+  ✓  85 tests/browser/status.spec.ts:51:1 › own confirmation explains the new revision and history updates without a status refresh (3.6s)
+  ✓  86 tests/browser/status.spec.ts:79:1 › a verified contribution stays in history when the head block moves during the log read (6.8s)
+
+
+  1) tests/browser/observations.spec.ts:70:1 › a pending edit that loses the revision race has a reverted receipt and no contribution 
+
+    Test timeout of 45000ms exceeded.
+
+    Error: locator.click: Test timeout of 45000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Verify hash', exact: true })
+        - locator resolved to <button type="submit">Verify hash</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+      - element was detached from the DOM, retrying
+
+
+      84 |   const hash = await rpc('eth_sendTransaction', [original]);
+      85 |   await page.getByLabel('Recover with transaction hash').fill(hash);
+    > 86 |   await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
+         |                                                                        ^
+      87 |   await expect(page.getByText('COMMIT ATTEMPT · REVERTED')).toBeVisible();
+      88 |   await expect(page.locator('.transaction')).toContainText(
+      89 |     'Someone changed the dungeon first. Play latest to try the new revision.',
+        at /home/boyaditya/Coding/ruin-relay/tests/browser/observations.spec.ts:86:72
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/observations-a-pending-edi-40e9a-receipt-and-no-contribution/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/observations-a-pending-edi-40e9a-receipt-and-no-contribution/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/observations-a-pending-edi-40e9a-receipt-and-no-contribution/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/observations-a-pending-edi-40e9a-receipt-and-no-contribution/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/browser/observations.spec.ts:70:1 › a pending edit that loses the revision race has a reverted receipt and no contribution 
+  85 passed (7.1m)
