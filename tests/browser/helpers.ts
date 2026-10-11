@@ -75,6 +75,8 @@ export interface WalletControl {
   overrideNonce?: number;
   /** Returned from eth_sendTransaction instead of broadcasting. */
   sendError?: WalletSendError;
+  /** Wallet/provider retry reports an error after the real transaction was accepted. */
+  sendErrorAfterBroadcast?: WalletSendError;
 }
 export async function injectWallet(page: Page, account = 0) {
   const accounts: Hex[] = await rpc('eth_accounts');
@@ -108,6 +110,7 @@ export async function injectWallet(page: Page, account = 0) {
             ? params
             : [{ ...params[0], nonce: `0x${control.overrideNonce.toString(16)}` }];
         control.hash = await rpc(method, actual);
+        if (control.sendErrorAfterBroadcast) return { error: control.sendErrorAfterBroadcast };
         if (control.mode === 'lost')
           return { error: { code: -32000, message: 'Wallet response lost after broadcast' } };
         return { result: control.hash };
