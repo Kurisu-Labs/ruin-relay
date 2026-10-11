@@ -1,0 +1,321 @@
+.dungeon-board {
+  --direction-size: 48px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.dungeon-board .board-viewport {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+}
+.dungeon-board .board-viewport::after {
+  display: none;
+}
+.board-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.board-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 65px 15px #050b1080;
+  background: radial-gradient(ellipse at 50% 45%, transparent 45%, #02090d50 100%);
+}
+.dungeon-board .board {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+.board-controls {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 24px;
+  padding: 12px 20px 8px;
+  border-top: 1px solid #52634b80;
+  background: linear-gradient(180deg, #192a27ee, #101d1fff);
+  box-shadow: 0 -12px 30px #06101466;
+}
+.board-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, var(--direction-size));
+  grid-template-rows: repeat(2, var(--direction-size));
+  gap: 4px;
+}
+.board-dpad .board-direction {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  width: var(--direction-size);
+  height: var(--direction-size);
+  min-width: var(--direction-size);
+  min-height: var(--direction-size);
+  max-width: var(--direction-size);
+  max-height: var(--direction-size);
+  aspect-ratio: 1;
+  border: 1px solid #71836d;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #344c3f, #1a2a28);
+  color: #f2e5b9;
+  box-shadow:
+    0 3px 0 #08130e,
+    inset 0 1px 0 #b7c99322;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.board-dpad .board-direction svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.board-dpad .board-direction:active:enabled {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #08130e;
+  background: #405c46;
+}
+.game-toolbar {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(48px, 1fr));
+  gap: 6px;
+  align-items: stretch;
+  width: auto;
+  max-width: 780px;
+  justify-self: end;
+  order: initial;
+  margin: 0;
+  color: #bdcdbf;
+}
+.game-toolbar > a,
+.game-toolbar > button,
+.game-toolbar .fullscreen-control > button,
+.game-toolbar summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  padding: 3px 5px;
+  border: 1px solid #425a50;
+  border-radius: 6px;
+  background: #142423cc;
+  color: #cad8c8;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+.game-toolbar .control-label {
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.game-toolbar svg {
+  width: 19px;
+  height: 19px;
+  flex: none;
+}
+.game-toolbar .game-home {
+  border-color: #9cab78;
+  color: #e5e7c0;
+  background: #304137;
+}
+.game-toolbar > a:hover,
+.game-toolbar summary:hover {
+  background: #2e4240;
+}
+.game-toolbar summary:focus-visible {
+  outline: 3px solid #e8c98b;
+  outline-offset: 3px;
+}
+.fullscreen-control {
+  display: flex;
+  position: relative;
+  min-width: 0;
+}
+.fullscreen-error {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  z-index: 6;
+  width: 180px;
+  padding: 12px;
+  border: 1px solid #735c3d;
+  border-radius: 6px;
+  background: #28231d;
+  font-size: 12px;
+  color: #ead6aa;
+}
+.board-settings {
+  position: relative;
+  min-width: 0;
+}
+.board-settings summary {
+  list-style: none;
+}
+.board-settings summary::-webkit-details-marker {
+  display: none;
+}
+.board-settings[open] summary {
+  border-color: #bac695;
+  background: #2d4037;
+}
+.board-settings .board-options {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  z-index: 5;
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 12px;
+  width: 185px;
+  max-height: 65dvh;
+  overflow-y: auto;
+  border: 1px solid #75826c;
+  border-radius: 8px;
+  background: #122020f5;
+  box-shadow: 0 8px 30px #0008;
+}
+.board-settings:not([open]) .board-options {
+  display: none;
+}
+.board-settings .board-options button {
+  min-height: 44px;
+  font-size: 12px;
+  text-align: left;
+}
+.board-controls .board-status {
+  grid-column: 1 / -1;
+  min-height: 16px;
+  padding: 2px 0 0;
+  font: 10px/1.4 monospace;
+  color: #b5c2a5;
+}
+.board-controls .board-instructions {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 1150px) {
+  .game-toolbar {
+    grid-template-columns: repeat(4, minmax(48px, 1fr));
+    max-width: 400px;
+  }
+}
+.is-editing .game-toolbar {
+  grid-template-columns: repeat(4, minmax(48px, 1fr));
+}
+/* Movement is complete at EXIT; give the small-screen edit map its space back. */
+@media (max-width: 850px) {
+  .is-overview .board-dpad {
+    display: none;
+  }
+  .is-overview .board-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .is-overview .game-toolbar {
+    grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+    width: 100%;
+    max-width: none;
+  }
+}
+@media (max-width: 600px) {
+  .board-controls {
+    gap: 6px 12px;
+    padding: 10px 10px 6px;
+  }
+  .game-toolbar,
+  .is-editing .game-toolbar {
+    grid-template-columns: repeat(3, 48px);
+    gap: 4px;
+  }
+  .game-toolbar .control-label {
+    font-size: 8px;
+  }
+  .game-toolbar svg {
+    width: 18px;
+    height: 18px;
+  }
+  .is-overview .game-toolbar {
+    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  }
+}
+@media (max-width: 380px) {
+  .dungeon-board {
+    --direction-size: 44px;
+  }
+  .board-controls {
+    padding: 8px 8px 5px;
+    column-gap: 6px;
+  }
+  .game-toolbar,
+  .is-editing .game-toolbar {
+    grid-template-columns: repeat(3, 44px);
+  }
+  .game-toolbar > a,
+  .game-toolbar > button,
+  .game-toolbar .fullscreen-control > button,
+  .game-toolbar summary {
+    height: 44px;
+    padding-inline: 1px;
+  }
+  .is-overview .game-toolbar {
+    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  }
+}
+@media (max-height: 560px) and (min-width: 600px) {
+  .board-controls {
+    padding-block: 6px 4px;
+    column-gap: 10px;
+  }
+  .dungeon-board {
+    --direction-size: 44px;
+  }
+  .game-toolbar,
+  .is-editing .game-toolbar {
+    grid-template-columns: repeat(5, minmax(44px, 1fr));
+    gap: 4px;
+  }
+  .game-toolbar > a,
+  .game-toolbar > button,
+  .game-toolbar .fullscreen-control > button,
+  .game-toolbar summary {
+    height: 44px;
+    padding-inline: 2px;
+  }
+  .game-toolbar .control-label {
+    font-size: 8px;
+  }
+  .board-controls .board-status {
+    font-size: 9px;
+  }
+  .is-overview .game-toolbar {
+    grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+  }
+}
