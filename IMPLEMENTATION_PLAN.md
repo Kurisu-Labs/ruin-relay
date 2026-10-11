@@ -2,6 +2,8 @@
 
 > v1.0 / 10 October 2026. Time estimates are planning targets, not guaranteed completion times.
 
+**Renderer amendment, 11 October 2026:** [ADR-042](docs/adr/0042-threejs-only-dungeon.md) replaces the original Phaser work items below with the sole Three.js presentation in `src/game3d/`. Current scope and migration evidence are in [the renderer migration](gameplan/RENDERER_MIGRATION.md); the domain, contract, and release gates still apply.
+
 ## Milestones / internal deadlines (WIB)
 
 | Milestone | Target | Done when |

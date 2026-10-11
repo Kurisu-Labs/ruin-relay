@@ -1,5 +1,11 @@
 # PRD — Ruin Relay: Phaser 4 Isometric Dungeon
 
+> **Scope aktif 11 Oktober 2026:** pengguna memilih game 3D saja. `/play` kini memakai Three.js dan `/play/3d` menjadi alias; pilihan dan runtime 2D dihapus setelah backup diverifikasi. [ADR-042](../docs/adr/0042-threejs-only-dungeon.md), [scope 3D](THREE_DUNGEON.md) dan [migrasi](RENDERER_MIGRATION.md) menggantikan detail engine, kamera dan aset 2D pada dokumen historis di bawah. Aturan domain tetap berlaku.
+
+> Percobaan tambahan 11 Oktober 2026: dungeon orang pertama pada `/play/3d`, dengan Phaser `/play` sebagai cadangan. Ruang lingkup dan penerimaan terbaru ada di [THREE_DUNGEON](THREE_DUNGEON.md) dan [ADR-041](../docs/adr/0041-alternative-first-person-dungeon.md). Aturan 7×7, EXIT dan satu edit tetap sama.
+
+> Permintaan lanjutan 11 Oktober 2026 menerima game yang memenuhi viewport pada `/play` dan D-pad mouse/sentuh. Pembaruan scope ini menggantikan penundaan touch di bagian historis dokumen: lihat [pembaruan viewport](VIEWPORT_UPDATE.md) dan [ADR-040](../docs/adr/0040-viewport-game-and-touch-controls.md). QA browser/mobile tetap dicatat sebagai pending.
+
 > Pembaruan 11 Oktober 2026: kamera dekat lurus, arah WASD sesuai layar dan artwork v2 menggantikan bagian isometrik/pixel-art awal pada dokumen ini. Lihat [spesifikasi terkini](TOP_DOWN_UPDATE.md), [ADR-038](../docs/adr/0038-close-top-down-camera.md) dan [bukti validasi](VALIDATION_RECORD.md). Aturan domain yang tidak berubah tetap berlaku.
 
 Versi 0.1 · 10 Oktober 2026 · Status: proposed implementation plan.

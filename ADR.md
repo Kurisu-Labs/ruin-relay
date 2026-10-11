@@ -14,13 +14,19 @@
 
 [ADR-039](docs/adr/0039-escape-only-overview.md) menggantikan overview manual dan ukuran view pada ADR-038: peta penuh hanya muncul setelah local escape untuk editor, kamera bermain lebih dekat, dan alasan Commit nonaktif dijelaskan di panel edit.
 
+[ADR-040](docs/adr/0040-viewport-game-and-touch-controls.md) menggantikan penundaan D-pad ADR-027 dan memperinci zoom responsif ADR-039: landing `/` dan game yang memenuhi viewport `/play` berbagi satu sesi Relay, dengan navigasi tanpa reload, kontrol mouse/sentuh, dan fullscreen browser opsional.
+
+[ADR-041](docs/adr/0041-alternative-first-person-dungeon.md) menambahkan view orang pertama Three.js pada `/play/3d` sebagai alternatif terpisah dari Phaser `/play`. Kontrol relatif kamera diterjemahkan ke intent kardinal yang sama; kedua renderer berbagi Run, editor dan commit tanpa perubahan kontrak.
+
+[ADR-042](docs/adr/0042-threejs-only-dungeon.md) menggantikan pilihan dua renderer ADR-041: Three.js menjadi satu-satunya game di `/play`, tautan `/play/3d` menjadi alias, dan Phaser beserta asetnya dihapus setelah backup lokal diverifikasi. Keputusan kamera/engine 2D di atas adalah riwayat; Run, editor, viewport, dan transaksi tetap mengikuti amendment domain yang sama.
+
 ## A. Ringkasan arsitektur terkunci
 
-**Keputusan inti:** gunakan satu kontrak Solidity sebagai canonical state + validator untuk satu puzzle dungeon 7×7. Pergerakan karakter terjadi lokal di Phaser. Setelah pemain mencapai EXIT pada snapshot revisi tertentu, UI meminta wallet mengirim satu transaksi **solve-and-edit**. Kontrak memvalidasi path pada peta lama, mengganti satu bit tile, menjalankan BFS pada peta baru, memperbarui revisi, dan mengirim event. Tidak diperlukan backend real-time atau token.
+**Keputusan inti:** gunakan satu kontrak Solidity sebagai canonical state + validator untuk satu puzzle dungeon 7×7. Pergerakan karakter terjadi lokal dengan presentasi Three.js. Setelah pemain mencapai EXIT pada snapshot revisi tertentu, UI meminta wallet mengirim satu transaksi **solve-and-edit**. Kontrak memvalidasi path pada peta lama, mengganti satu bit tile, menjalankan BFS pada peta baru, memperbarui revisi, dan mengirim event. Tidak diperlukan backend real-time atau token.
 
 ```text
                                      Arbitrum Sepolia (421614)
-  Browser / Phaser             +----------------------------------+
+  Browser / Three.js           +----------------------------------+
   +-------------------------+  | RuinRelay.sol                    |
   | Local movement & HUD    |  | - uint64 walls                  |
   | Path packer / local BFS |--| - uint64 revision               |

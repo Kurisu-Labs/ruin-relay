@@ -1,10 +1,12 @@
-# Ruin Relay — Game Plan: Phaser 4 Dungeon
+# Ruin Relay — Game Plan dan Riwayat Presentasi
 
 Tanggal rancangan: 10 Oktober 2026 · Implementasi lokal: 11 Oktober 2026 · Versi paket: 0.4.
 
-Paket awal merencanakan dungeon isometrik berbasis Phaser 4. Feedback pengguna kemudian menggantinya dengan kamera dekat lurus dan artwork dungeon v2; mulai dari [pembaruan terbaru](TOP_DOWN_UPDATE.md). Dokumen ditulis dalam bahasa Indonesia agar mudah dibahas; teks yang tampil dalam produk tetap bahasa Inggris mengikuti repo.
+**Versi aktif:** [dungeon orang pertama Three.js](THREE_DUNGEON.md) di `src/game3d/` dan `/play`. Pengguna memilih 3D sebagai satu-satunya game; `/play/3d` tetap berfungsi sebagai alias. Phaser, source 2D dan atlas telah dihapus setelah backup lokal diverifikasi. Keputusan dan cara memulihkan versi lama ada di [ADR-042](../docs/adr/0042-threejs-only-dungeon.md) serta [migrasi renderer](RENDERER_MIGRATION.md).
 
-Implementasi lokal kini berada di `src/game/`, memakai Phaser 4.2.1, kamera lurus yang mengikuti karakter dan atlas artwork dungeon v2. Dokumen di bawah mempertahankan requirement dan alasan desain; [validation record](VALIDATION_RECORD.md) mencatat pengujian yang benar-benar dijalankan serta gap tersisa. Tidak ada commit, push, atau deployment yang dilakukan untuk implementasi ini.
+Beranda `/` dan game yang memenuhi viewport tetap berbagi satu sesi tanpa reload, dengan tombol Home, kontrol mouse/sentuh dan fullscreen opsional. Aturan 7×7, EXIT, satu edit dan transaksi tetap sama. Status tes terbaru ada di catatan migrasi dan dokumen 3D.
+
+Paket di bawah menyimpan **rancangan dan validasi historis 2D**: isometrik Phaser 4, kamera dekat lurus, artwork v2/v3, lalu [pembaruan viewport](VIEWPORT_UPDATE.md). Rujukan `src/game/` dan atlas pada dokumen lama mengacu pada snapshot sebelum migrasi, bukan file runtime saat ini. Detail engine/kamera/aset tersebut digantikan oleh ADR-042; aturan domain tetap berlaku.
 
 ## 1. Cara membaca
 
@@ -56,7 +58,7 @@ ADR-038 mengganti ADR-034 dengan kamera dekat lurus berdasarkan feedback penggun
 
 - HEAD saat penulisan: `2f18a91` — implementasi lokal sudah ada.
 - `package.json`: `phaser` masih `3.90.0`.
-- [Board saat ini](../src/game/Board.tsx): Canvas 560×560, grid tegak, gambar geometris, keyboard; belum isometrik.
+- `src/game/Board.tsx` pada snapshot historis: Canvas 560×560, grid tegak, gambar geometris, keyboard; belum isometrik.
 - [Rules](../src/lib/rules/index.ts): board 7, EXIT 48, batas 96 langkah, preview toggle dan solvability.
 - [Relay](../src/lib/relay.ts): pemilik run, pilihan edit, dan koordinasi commit.
 - [Release evidence](../docs/release-evidence.md): hasil pengujian historis dan status release; bukan bukti migrasi Phaser 4 sudah diuji.

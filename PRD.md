@@ -7,6 +7,8 @@
 > **Bahasa dokumen kerja:** Indonesia. **Seluruh konten submission resmi: English.**  
 > **Rujukan teknis utama:** [`ADR.md`](ADR.md), [`reference/fixtures.json`](reference/fixtures.json), [`reference/IRuinRelay.sol`](reference/IRuinRelay.sol), [`TEST_PLAN.md`](TEST_PLAN.md).
 
+**Amendment presentasi 11 Oktober 2026:** [ADR-040](docs/adr/0040-viewport-game-and-touch-controls.md) menerima game yang memenuhi viewport dengan kontrol mouse/sentuh. [ADR-042](docs/adr/0042-threejs-only-dungeon.md) menjadikan Three.js satu-satunya renderer di `/play`, dengan WASD/panah untuk bergerak relatif kamera dan Q/E untuk berputar. Rujukan Phaser dan kontrol desktop awal di bawah merupakan baseline historis yang digantikan amendment tersebut; aturan dungeon, Run dan transaksi tetap berlaku.
+
 ## 0. Ringkasan eksekutif
 
 **Ruin Relay** adalah game browser puzzle dungeon asinkron: semua pemain menghadapi **satu dungeon bersama**; pemain yang berhasil keluar memperoleh kesempatan mengubah **tepat satu tile** untuk menjadi tantangan pemain berikutnya. Peta dan urutan edit resmi dikelola kontrak di **Arbitrum Sepolia**. Bermain dan bergerak tidak memerlukan wallet; wallet hanya diperlukan ketika pemain memutuskan untuk menulis kontribusi permanen ke chain.

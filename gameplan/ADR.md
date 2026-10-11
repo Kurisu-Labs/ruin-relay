@@ -1,10 +1,14 @@
 # ADR — Arsitektur Presentasi Game
 
+**Keputusan aktif terbaru:** [ADR-042](../docs/adr/0042-threejs-only-dungeon.md) menggantikan engine/pipeline 2D dan pilihan dua renderer: game memakai Three.js saja di `/play`. Bagian berikut mempertahankan sejarah keputusan; lihat [migrasi dan pemulihan 2D](RENDERER_MIGRATION.md).
+
 Status: **accepted** untuk ADR-033–037 pada implementasi lokal yang diminta pengguna. Record normatif berada di `docs/adr/`; folder `gameplan/adr/` berisi pointer. Penerimaan keputusan terpisah dari hasil pengujian release.
 
 [ADR-038](../docs/adr/0038-close-top-down-camera.md) kini menggantikan ADR-034 dengan kamera dekat lurus, view overview untuk editor dan artwork v2. Indeks awal berikut mempertahankan sejarah keputusan.
 
 [ADR-039](../docs/adr/0039-escape-only-overview.md) mengganti overview manual dan ukuran view ADR-038: kamera lebih dekat, overview hanya setelah escape untuk editor, serta penjelasan syarat Commit di dekat tombol.
+
+[ADR-041](../docs/adr/0041-alternative-first-person-dungeon.md) menambahkan alternatif dungeon orang pertama melalui Three.js di `/play/3d`, dengan kontrol relatif kamera dan sesi Relay yang sama. Phaser `/play` dipertahankan. Keputusan ini mengamendemen engine tunggal ADR-033 dan routing ADR-040 hanya untuk view baru tersebut.
 
 ## 1. Hubungan dengan ADR yang sudah ada
 

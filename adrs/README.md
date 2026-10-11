@@ -29,6 +29,7 @@ These are extracts from `../ADR.md`; the master governs if an extract and later 
 - [ADR-025 — Security posture: minimal external attack surface](ADR-025.md)
 - [ADR-026 — Pengukuran dan data minimal](ADR-026.md)
 - [ADR-027 — Mobile friendly read-only, desktop-first controls](ADR-027.md)
+- [Amendment ADR-040 — Game memenuhi viewport dan kontrol sentuh](../docs/adr/0040-viewport-game-and-touch-controls.md)
 - [ADR-028 — Perubahan aturan gameplay harus versioned](ADR-028.md)
 
 ## Amendment presentasi game
@@ -38,3 +39,7 @@ ADR-014 kini diamendemen oleh [ADR-033](../docs/adr/0033-phaser4-renderer.md), [
 [ADR-038](../docs/adr/0038-close-top-down-camera.md) mengganti ADR-034 dengan kamera dekat lurus berdasarkan feedback pengguna, serta memperbarui aset aktif menjadi v2.
 
 [ADR-039](../docs/adr/0039-escape-only-overview.md) menggantikan overview manual dan ukuran view ADR-038: overview hanya untuk editor setelah local escape, kamera bermain lebih dekat, dan panel edit menjelaskan syarat Commit.
+
+[ADR-041](../docs/adr/0041-alternative-first-person-dungeon.md) menambahkan renderer Three.js orang pertama di `/play/3d`, mempertahankan Phaser di `/play` dan satu sesi Relay untuk kedua view.
+
+[ADR-042](../docs/adr/0042-threejs-only-dungeon.md) menggantikan pilihan dua renderer ADR-041 dan engine 2D: Three.js menjadi satu-satunya renderer pada `/play`, dengan `/play/3d` sebagai alias. Source dan aset 2D dipulihkan dari riwayat/backup, bukan pilihan runtime.
