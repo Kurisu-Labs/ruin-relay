@@ -1,0 +1,24 @@
+
+> ruin-relay@0.1.0 test:browser
+> playwright test tests/browser/deploy-operator.spec.ts
+
+[WebServer] (node:16169) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:16275) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:16319) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/deploy-operator.spec.ts:112:3 › operator deployment buffers a stale gas-price quote and refreshes before signing: success (443ms)
+  ✓  2 tests/browser/deploy-operator.spec.ts:112:3 › operator deployment buffers a stale gas-price quote and refreshes before signing: rising-base (295ms)
+  ✓  3 tests/browser/deploy-operator.spec.ts:142:3 › operator deployment blocks unsafe signing: wrong-account (159ms)
+  ✓  4 tests/browser/deploy-operator.spec.ts:142:3 › operator deployment blocks unsafe signing: wrong-network (154ms)
+  ✓  5 tests/browser/deploy-operator.spec.ts:142:3 › operator deployment blocks unsafe signing: storage-failure (243ms)
+  ✓  6 tests/browser/deploy-operator.spec.ts:159:1 › operator manual fee recovery preserves the failed intent and never resends (181ms)
+  ✓  7 tests/browser/deploy-operator.spec.ts:178:1 › operator manual fee recovery remains locked when the nonce is in flight (181ms)
+  ✓  8 tests/browser/deploy-operator.spec.ts:188:1 › operator legacy recovery cannot clear a new unresolved signing request (121ms)
+  ✓  9 tests/browser/deploy-operator.spec.ts:201:1 › operator server serves only public deployment artifacts (27ms)
+
+  9 passed (4.2s)

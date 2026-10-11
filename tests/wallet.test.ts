@@ -44,10 +44,9 @@ describe('pre-broadcast failures', () => {
     expect(explain(error)).not.toMatch(/Wrong network/);
   });
 
-  it('treats insufficient funds, nonce, underpriced, and intrinsic gas as not broadcast', () => {
+  it('treats insufficient funds, underpriced, and intrinsic gas as not broadcast', () => {
     for (const message of [
       'insufficient funds for gas * price + value',
-      'nonce too low',
       'replacement transaction underpriced',
       'intrinsic gas too low',
     ]) {
@@ -56,6 +55,18 @@ describe('pre-broadcast failures', () => {
       );
       expect(notBroadcast(error), message).toBe(true);
       expect(explain(error), message).not.toMatch(/Wrong network/);
+    }
+  });
+
+  it('keeps nonce consumption ambiguous until transaction evidence is read', () => {
+    for (const message of ['nonce too low', 'nonce has already been used']) {
+      const error = wrapped(
+        Object.assign(new Error('Internal JSON-RPC error.'), { data: { message } }),
+      );
+      expect(notBroadcast(error), message).toBe(false);
+      expect(explain(error), message).not.toMatch(
+        /not broadcast|rejected before broadcast|preserved/,
+      );
     }
   });
 

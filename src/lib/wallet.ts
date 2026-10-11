@@ -83,7 +83,7 @@ function facts(error: unknown): ErrorFacts {
  * cannot land.
  */
 const AMBIGUOUS =
-  /timed out|timeout|took too long|response lost|failed to fetch|network request failed|socket hang up|econnreset|already known|transaction already imported/i;
+  /timed out|timeout|took too long|response lost|failed to fetch|network request failed|socket hang up|econnreset|already known|transaction already imported|nonce too low|nonce has already been used|nonce already used/i;
 
 /**
  * The node returned these from eth_sendRawTransaction / eth_sendTransaction
@@ -92,7 +92,7 @@ const AMBIGUOUS =
  * response may have been lost after broadcast.
  */
 const NODE_REJECTED =
-  /max fee per gas less than block base fee|fee cap less than block base fee|cannot be lower than the block base fee|insufficient funds|exceeds transaction sender account balance|nonce too low|nonce too high|replacement transaction underpriced|transaction underpriced|intrinsic gas too low|intrinsic gas too high|gas limit reached|exceeds block gas limit|gas required exceeds allowance|tip higher than fee cap|max priority fee per gas higher than max fee per gas/i;
+  /max fee per gas less than block base fee|fee cap less than block base fee|cannot be lower than the block base fee|insufficient funds|exceeds transaction sender account balance|nonce too high|replacement transaction underpriced|transaction underpriced|intrinsic gas too low|intrinsic gas too high|gas limit reached|exceeds block gas limit|gas required exceeds allowance|tip higher than fee cap|max priority fee per gas higher than max fee per gas/i;
 
 const SIMULATION_REVERT =
   /execution reverted|StaleRevision|UnsolvableMutation|InvalidStep|InvalidMoveCount|NonCanonicalDirections|PathDoesNotReachExit|ExitReachedEarly|TileNotEditable/i;
@@ -140,7 +140,7 @@ export function explain(error: unknown) {
     return 'The fee was rejected before broadcast: max fee per gas was below the block base fee. Your run and edit are preserved.';
   if (/insufficient funds|exceeds transaction sender account balance/i.test(info.text))
     return 'Not enough test ETH for gas. The transaction was not broadcast. Fund your wallet on Arbitrum Sepolia, then try again.';
-  if (/nonce too low|nonce too high/i.test(info.text))
+  if (/nonce too high/i.test(info.text))
     return 'The nonce was rejected before broadcast. Your run and edit are preserved.';
   if (/underpriced/i.test(info.text))
     return 'The transaction was underpriced and was not broadcast. Your run and edit are preserved.';
@@ -163,7 +163,7 @@ export function explain(error: unknown) {
   if (/TileNotEditable/i.test(info.text))
     return 'Choose an editable tile. The transaction was not broadcast.';
   if (
-    /journal|recovery|coordination|already in progress|ambiguous|unrelated|configured/i.test(
+    /journal|recovery|coordination|already in progress|ambiguous|unrelated|configured|run or edit changed/i.test(
       info.text,
     )
   )

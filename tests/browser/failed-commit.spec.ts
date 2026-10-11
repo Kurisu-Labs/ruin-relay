@@ -70,6 +70,27 @@ test('a node fee rejection before broadcast restores the draft and survives relo
   expect(cap).toBeGreaterThanOrEqual(base * 2n + priority);
 });
 
+test('nonce too low after a lost successful response recovers the canonical mutation', async ({
+  page,
+}) => {
+  const wallet = await injectWallet(page);
+  wallet.sendErrorAfterBroadcast = {
+    code: -32603,
+    message: 'Internal JSON-RPC error.',
+    data: { code: -32000, message: 'nonce too low' },
+  };
+  await open(page);
+  await walk(page);
+  await submit(page);
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toHaveCount(0);
+  expect(wallet.requests).toHaveLength(1);
+  expect(wallet.hash).toBeDefined();
+  await page.reload();
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  expect(wallet.requests).toHaveLength(1);
+});
+
 for (const failure of [
   {
     name: 'insufficient funds',

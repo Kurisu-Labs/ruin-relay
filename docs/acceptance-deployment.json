@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-11T04:59:44.640Z",
+  "chainId": 421614,
+  "hash": "0x793c8ad958d6768533bd42412b69173c6b96b3d36a67861462113d04330cbc3b",
+  "address": "0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79",
+  "deployer": "0x37714b787066ce967d027b752d045e13b8b64a84",
+  "nonce": 0,
+  "block": "317967651",
+  "blockHash": "0x32cc92ae3a3ffcd7be910d785d5b9b4c927f12846aff2bd118a4e1bcdfad4b49",
+  "gasUsed": "602912",
+  "effectiveGasPrice": "31320000",
+  "status": "success",
+  "canonical": true,
+  "bytecodeAndConstructorMatch": true,
+  "initial": {
+    "walls": "0xd053827900a",
+    "revision": "0",
+    "editableMask": "0x1f9e7e1cf00"
+  },
+  "live": {
+    "walls": "0xd053827900a",
+    "revision": "0",
+    "editableMask": "0x1f9e7e1cf00"
+  },
+  "sourceVerification": {
+    "service": "Sourcify",
+    "creationMatch": "exact_match",
+    "runtimeMatch": "exact_match",
+    "verifiedAt": "2026-10-11T04:59:33Z",
+    "compilerVersion": "0.8.24+commit.e11b9ed9",
+    "url": "https://repo.sourcify.dev/421614/0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79"
+  }
+}
