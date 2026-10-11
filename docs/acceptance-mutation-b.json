@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-10-11T06:19:41.388Z",
+  "chainId": 421614,
+  "hash": "0x08647c14c04e4c3732c2641664f301261977cffd3abe52e12d4bc08627b0c16f",
+  "address": "0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79",
+  "from": "0x4cc38d7c18c0eb53662d2d3fa382c3a82b2e7ad9",
+  "to": "0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79",
+  "nonce": 0,
+  "value": "0",
+  "status": "success",
+  "block": "317986584",
+  "blockHash": "0xb8ebf412bc0098e6e3ef246c32ef094a1f5c77ad4453ec3aff27f03e5d64ddcc",
+  "canonical": true,
+  "observedHead": "317986788",
+  "gasUsed": "109803",
+  "effectiveGasPrice": "30914000",
+  "feeTestEth": "0.000003394449942",
+  "call": {
+    "functionName": "completeAndMutate",
+    "args": ["1", "6145019892054", 22, 38]
+  },
+  "events": [
+    {
+      "eventName": "DungeonMutated",
+      "args": {
+        "revision": "2",
+        "editor": "0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9",
+        "tileIndex": 38,
+        "becameWall": true,
+        "wallMask": "14593093505034"
+      },
+      "logIndex": 8
+    }
+  ],
+  "stateAtBlock": {
+    "walls": "0xd45b827900a",
+    "revision": "2",
+    "editableMask": "0x1f9e7e1cf00"
+  },
+  "live": {
+    "walls": "0xd45b827900a",
+    "revision": "2",
+    "editableMask": "0x1f9e7e1cf00"
+  },
+  "browserProfiles": {
+    "source": "operator statement in this conversation",
+    "separateProfilesConfirmed": true
+  }
+}

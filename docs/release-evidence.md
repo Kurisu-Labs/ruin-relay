@@ -1,6 +1,6 @@
 # Release evidence
 
-Status: local implementation, automated checks, and code review completed. The fresh acceptance contract is deployed and Sourcify-verified. Wallet A’s canonical tile-31 mutation is confirmed at revision 1. Wallet B, separate-profile evidence, and release recordings remain **pending**.
+Status: local implementation, automated checks, and code review completed. The fresh acceptance contract is deployed and Sourcify-verified. Both canonical mutations are confirmed: wallet A created revision 1 with tile 31, then wallet B created revision 2 with tile 38. The operator confirmed separate browser profiles. Release recordings remain **pending**.
 
 ## Issue #1 completion checklist
 
@@ -13,9 +13,11 @@ The latest contributor implementation is on `main` at `08e01b5`; PRs #15, #16, a
 - [x] Approve a fresh acceptance deployment from wallet A in Firefox: `0x793c8ad958d6768533bd42412b69173c6b96b3d36a67861462113d04330cbc3b`.
 - [x] Verify the fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
 - [x] Verify wallet A’s tile-31 transaction from revision 0, its canonical receipt, explorer link, and resulting walls `0xd05b827900a`.
-- [ ] Confirm the operator’s browser-profile provenance for A and B and retain the visible UI recording.
-- [ ] In separate browser profile B, submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
-- [ ] Record gas used for deployment and both real mutations, plus visible board changes and public history.
+- [x] Obtain the operator’s confirmation that A and B used separate browser profiles.
+- [ ] Retain the complete visible UI recording of the two-profile demo.
+- [x] In separate browser profile B (operator-confirmed), submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
+- [x] Record gas used for deployment and both real mutations; verify both public history entries in the hosted UI.
+- [ ] Include the visible board changes in the complete demo recording.
 - [ ] Include a safety-rejection demonstration and the keyboard/mobile inspection evidence in the release materials.
 - [ ] Record the English product demo (at most three minutes) and separate presentation (two to three minutes).
 
@@ -32,7 +34,7 @@ Provided by the operator on 10 October 2026 (Asia/Jakarta). Funding was verified
 | Deployer / player A | `0x37714b787066ce967d027B752D045e13b8b64A84` | 0.05     |
 | Player B            | `0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9` | 0.05     |
 
-The operator reports an existing Firefox wallet extension. Firefox is unavailable through this session's browser-control connection, so wallet approvals require operator interaction. The real A/B demonstration requires separate Firefox profiles. Funding and deployment are complete; wallet A’s first mutation is verified below. The CLI signer remains configured for the generated local wallets. These addresses and balances are not deployment or mutation evidence.
+The operator reports an existing Firefox wallet extension. Firefox is unavailable through this session's browser-control connection, so wallet approvals require operator interaction. The real A/B demonstration requires separate Firefox profiles. Funding and deployment are complete; both canonical mutations are verified below and the operator confirms separate profiles. The CLI signer remains configured for the generated local wallets. These addresses and balances are not deployment or mutation evidence.
 
 | Purpose             | Address                                      |
 | ------------------- | -------------------------------------------- |
@@ -70,9 +72,19 @@ At 13:11:27 WIB, the public Arbitrum Sepolia RPC independently confirmed the ope
 - `DungeonMutated` records revision 1, editor A, tile 31 becoming a wall, and walls `0xd05b827900a`. Both the state at the receipt block and the separately read live state match the fixture, with editable mask `0x1f9e7e1cf00` unchanged.
 - Gas used: **110473**; effective gas price: **31618000 wei**; receipt-derived fee: **0.000003492935314 test ETH**.
 
-The agent completed the local escape and prepared tile 31 in the hosted UI. Automated extension access was blocked, and the operator reported that MetaMask’s side panel was unsupported in the in-app browser. The operator was directed to the existing Firefox wallet and then supplied this hash. The receipt proves the onchain mutation; the exact signing browser/profile and complete recording still require operator evidence. No claim of Ethereum L1 finality is made.
+The agent completed the local escape and prepared tile 31 in the hosted UI. Automated extension access was blocked, and the operator reported that MetaMask’s side panel was unsupported in the in-app browser. The operator was directed to the existing Firefox wallet and then supplied this hash. The receipt proves the onchain mutation. With the second transaction, the operator explicitly confirmed separate profiles for A and B; the complete recording is still pending. No claim of Ethereum L1 finality is made.
 
-Next: wallet B must load revision 1 in a separate browser profile, follow `DRRRRURRDDLDLLLDDRRDRR`, and toggle tile 38 to create revision 2 with walls `0xd45b827900a`.
+## Acceptance mutation B — 11 October 2026
+
+At 13:19:41 WIB, the public Arbitrum Sepolia RPC independently confirmed the operator-supplied [transaction](https://sepolia.arbiscan.io/tx/0x08647c14c04e4c3732c2641664f301261977cffd3abe52e12d4bc08627b0c16f). Full decoded evidence is retained in [acceptance-mutation-b.json](acceptance-mutation-b.json).
+
+- Sender: wallet B, `0x4Cc38D7C18C0EB53662d2D3FA382C3a82B2e7ad9`; destination: the same acceptance contract; nonce 0; value 0.
+- Successful canonical receipt at block `317986584`, hash `0xb8ebf412bc0098e6e3ef246c32ef094a1f5c77ad4453ec3aff27f03e5d64ddcc` (observed head `317986788`).
+- Decoded call: `completeAndMutate(1, 0x596bfba5156, 22, 38)`.
+- `DungeonMutated` records revision 2, editor B, tile 38 becoming a wall, and walls `0xd45b827900a`. The state at the receipt block and separately read live state both match the fixture. The editable mask remains `0x1f9e7e1cf00`.
+- Gas used: **109803**; effective gas price: **30914000 wei**; receipt-derived fee: **0.000003394449942 test ETH**.
+
+The operator explicitly confirmed separate browser profiles when supplying B’s hash. This is operator-provided provenance, not something inferred from onchain addresses. The hosted UI independently displayed live revision 2 and both history entries with the correct wallets, tiles, and explorer links. [Hosted history screenshot](screenshots/sepolia-two-wallet-history.png) records both public entries. Both required real mutations are complete; no further mutation or redeployment is needed. Complete English demo/presentation recordings and the remaining release-material evidence are still outstanding.
 
 ## Previous contributor deployment
 

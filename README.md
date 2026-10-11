@@ -4,7 +4,7 @@
 
 A desktop browser puzzle with one shared 7×7 dungeon. Play locally without a wallet; a valid escape lets you toggle one allowed tile through a single Solidity transaction. The contract verifies the path against the old dungeon and checks that the new dungeon still has an escape route.
 
-The application and local test harness are implemented. The fresh Arbitrum Sepolia acceptance contract is deployed at `0xf1ee7e1D9814E0ac2ddC3dd180a58f9698cc0d79` and Sourcify-verified (`exact_match`, chain 421614). **The Sepolia release gate is pending:** the separate-profile, two-wallet canonical sequence and release videos are still outstanding. The prior live contract is already revision 3; its receipts and the separate CLI rehearsal remain historical evidence. See the [completion checklist](docs/release-evidence.md#issue-1-completion-checklist) and [deployment evidence](docs/release-evidence.md#fresh-acceptance-deployment--11-october-2026).
+The application and local test harness are implemented. The fresh Arbitrum Sepolia acceptance contract is deployed at `0xf1ee7e1D9814E0ac2ddC3dd180a58f9698cc0d79` and Sourcify-verified (`exact_match`, chain 421614). The canonical two-wallet sequence is verified through revision 2, and the operator confirmed separate profiles. **The Sepolia release gate is pending:** complete release recordings and remaining manual evidence are still outstanding. The prior live contract is already revision 3; its receipts and the separate CLI rehearsal remain historical evidence. See the [completion checklist](docs/release-evidence.md#issue-1-completion-checklist) and [deployment evidence](docs/release-evidence.md#fresh-acceptance-deployment--11-october-2026).
 
 ## Run locally
 
@@ -38,7 +38,7 @@ Browser tests launch their own Anvil and Vite instances on ports 8545 and 4173; 
 
 The fixture is `reference/fixtures.json`: revision 0 → tile 31 → `0xd05b827900a`; revision 1 → tile 38 → `0xd45b827900a`. These are deterministic expectations, not deployment evidence.
 
-Wallet A’s real [Sepolia mutation](https://sepolia.arbiscan.io/tx/0xd2657acdce42c3b8560f757c1aa7a275ae55b412a74b87fbaa6729b82fa20521) is verified: tile 31, revision 0 → 1, walls `0xd05b827900a`, 110473 gas. [Decoded receipt and state evidence](docs/acceptance-mutation-a.json) are recorded. Wallet B’s mutation, separate-profile provenance, and the complete release recordings remain pending.
+Wallet A’s real [Sepolia mutation](https://sepolia.arbiscan.io/tx/0xd2657acdce42c3b8560f757c1aa7a275ae55b412a74b87fbaa6729b82fa20521) is verified: tile 31, revision 0 → 1, walls `0xd05b827900a`, 110473 gas. [Decoded receipt and state evidence](docs/acceptance-mutation-a.json) are recorded. Wallet B’s real [Sepolia mutation](https://sepolia.arbiscan.io/tx/0x08647c14c04e4c3732c2641664f301261977cffd3abe52e12d4bc08627b0c16f) is also verified: tile 38, revision 1 → 2, walls `0xd45b827900a`, 109803 gas. [Decoded B evidence](docs/acceptance-mutation-b.json) records the receipt and the operator’s confirmation of separate profiles. Complete release recordings remain pending.
 
 ## Sepolia setup
 
