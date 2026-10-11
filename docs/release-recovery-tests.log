@@ -1,0 +1,19 @@
+
+> ruin-relay@0.1.0 test:browser
+> playwright test tests/browser/hashless.spec.ts tests/browser/failed-commit.spec.ts --grep bounded log windows|duplicate canonical recovery|nonce too low after|failed bounded recovery
+
+[WebServer] (node:28294) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:28397) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:28440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/failed-commit.spec.ts:73:1 › nonce too low after a lost successful response recovers the canonical mutation (4.1s)
+  ✓  2 tests/browser/hashless.spec.ts:141:1 › hashless recovery uses bounded log windows on an aged deployment (1.5s)
+  ✓  3 tests/browser/hashless.spec.ts:153:1 › a failed bounded recovery window cannot prove no mutation occurred (1.9s)
+  ✓  4 tests/browser/hashless.spec.ts:165:1 › duplicate canonical recovery logs confirm one own mutation (1.9s)
+
+  4 passed (11.3s)

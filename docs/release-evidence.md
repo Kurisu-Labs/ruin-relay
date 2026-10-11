@@ -105,32 +105,32 @@ Measured on a separate Arbitrum Sepolia copy, [`0x57b7461dc06dda9e11159c0e75306e
 
 ## Verification record
 
-| Field                                   | Evidence                                                                                                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Source baseline                         | `bda73e4d68599aa8537088dd6985c6d126cc7e52`                                                                   |
-| Complete-suite commit                   | `d087cdf1f33176ce9857910f29dc4984b0c7d9ba`                                                                   |
-| Development-server guard commit         | `0d379d2912ef89fcebcc3efb18f7d4618e158032`                                                                   |
-| Implementation / test date              | 10 October 2026, Asia/Jakarta; design handoff predates implementation                                        |
-| Runtime                                 | Node.js 26.11.1, npm 11.20.0                                                                                 |
-| Solidity compiler                       | 0.8.24, optimizer 200, Cancun                                                                                |
-| Foundry                                 | 1.7.1                                                                                                        |
-| Fuzz configuration                      | 256 cases per fuzz test; 12 actions per mutation sequence                                                    |
-| Typechecking / build                    | Passed; `npm test` includes typechecking, and `npm run build` passed at the guard commit                     |
-| Formatting                              | Prettier, Foundry formatting, and Git whitespace checks passed                                               |
-| Rules / independent oracle              | 6 rules tests passed; independent Solidity fuzz oracle and 80 browser TS/Solidity random-mask comparisons    |
-| Contract tests / gas snapshot           | 11 tests passed; [focused gas snapshot](../.gas-snapshot), with measurement limits below                     |
-| Browser scenarios                       | 45 passed in the complete suite; 1 additional guard scenario passed with a repeated wallet-free escape smoke |
-| Keyboard / mobile inspection            | Agent inspected desktop WASD/R and the 375px mobile layout; separate human acceptance remains pending        |
-| Screenshots                             | [Desktop](screenshots/desktop.png), [375px mobile](screenshots/mobile.png); both local Anvil                 |
-| Performance benchmark                   | First-play latency and FPS not measured; build chunk-size warning recorded below                             |
-| Sepolia chain                           | 421614                                                                                                       |
-| Deployed contract / source verification | Official `0xDaFc851910D91D54916349EECB8d320a5a56b988`, block 317783571; Sourcify `exact_match`, chain 421614 |
-| Deployment transaction                  | `0xaf9a8e77b68c1b9d9e1952abab04fdc2584ac1b56bc2c0c3169f128fc4b87d1d`                                         |
-| Real UI mutation A, revision 0→1        | Pending on a fresh acceptance deployment                                                                     |
-| Real UI mutation B, revision 1→2        | Pending on a fresh acceptance deployment                                                                     |
-| Sepolia gas estimates / receipts        | Deployment 602,912 gas; fresh A/B browser mutation receipts pending                                          |
-| Product demo ≤3 minutes                 | [English script ready](demo-script.md); recording pending                                                    |
-| Presentation 2–3 minutes                | [English script ready](presentation.md); recording pending                                                   |
+| Field                                   | Evidence                                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Source baseline                         | `bda73e4d68599aa8537088dd6985c6d126cc7e52`                                                                        |
+| Original complete-suite commit          | `d087cdf1f33176ce9857910f29dc4984b0c7d9ba`                                                                        |
+| Development-server guard commit         | `0d379d2912ef89fcebcc3efb18f7d4618e158032`                                                                        |
+| Implementation / test date              | 10 October 2026, Asia/Jakarta; design handoff predates implementation                                             |
+| Runtime                                 | Node.js 26.11.1, npm 11.20.0                                                                                      |
+| Solidity compiler                       | 0.8.24, optimizer 200, Cancun                                                                                     |
+| Foundry                                 | 1.7.1                                                                                                             |
+| Fuzz configuration                      | 256 cases per fuzz test; 12 actions per mutation sequence                                                         |
+| Typechecking / build                    | Passed; `npm test` includes typechecking, and `npm run build` passed at the guard commit                          |
+| Formatting                              | Prettier, Foundry formatting, and Git whitespace checks passed                                                    |
+| Rules / independent oracle              | 6 rules tests passed; independent Solidity fuzz oracle and 80 browser TS/Solidity random-mask comparisons         |
+| Contract tests / gas snapshot           | 11 tests passed; [focused gas snapshot](../.gas-snapshot), with measurement limits below                          |
+| Browser scenarios                       | 45 passed in the complete suite; 1 additional guard scenario passed with a repeated wallet-free escape smoke      |
+| Keyboard / mobile inspection            | Agent inspected desktop WASD/R and the 375px mobile layout; separate human acceptance remains pending             |
+| Screenshots                             | [Desktop](screenshots/desktop.png), [375px mobile](screenshots/mobile.png); both local Anvil                      |
+| Performance benchmark                   | First-play latency and FPS not measured; build chunk-size warning recorded below                                  |
+| Sepolia chain                           | 421614                                                                                                            |
+| Deployed contract / source verification | Acceptance `0xf1ee7e1D9814E0ac2ddC3dd180a58f9698cc0d79`, block 317967651; Sourcify creation/runtime `exact_match` |
+| Deployment transaction                  | `0x793c8ad958d6768533bd42412b69173c6b96b3d36a67861462113d04330cbc3b`                                              |
+| Real UI mutation A, revision 0→1        | Pending on a fresh acceptance deployment                                                                          |
+| Real UI mutation B, revision 1→2        | Pending on a fresh acceptance deployment                                                                          |
+| Sepolia gas estimates / receipts        | Deployment 602,912 gas; fresh A/B browser mutation receipts pending                                               |
+| Product demo ≤3 minutes                 | [English script ready](demo-script.md); recording pending                                                         |
+| Presentation 2–3 minutes                | [English script ready](presentation.md); recording pending                                                        |
 
 The [complete test log](test-results.log) records a successful `npm test` exit: 11 contract tests, 6 rules tests, and 45 browser scenarios. After adding the development-server deny rule and its regression, `npm run test:browser -- --grep 'operator files are denied|wallet-free escape'` passed both selected tests ([guard log](operator-files-test.log)). This is **46 distinct browser scenarios** across the two runs, not a claim that the complete suite was rerun with 46 tests. At the guard-test commit, application and contract source were unchanged from the complete-suite commit. The subsequent observation-helper refactor is covered by the focused validation below.
 
@@ -146,6 +146,24 @@ node scripts/foundry.mjs forge test --root contracts --match-test 'testGasOpenBo
 The Vite build passed with a large-chunk warning: main JavaScript 568.07 kB (174.16 kB gzip), dynamically loaded Phaser 1,196.46 kB (318.59 kB gzip). A successful build is not a latency or FPS benchmark.
 
 Session history was split into atomic commits before publication. The complete-suite and guard-test commits above have exactly the same Git trees as the originally tested local commits `9e2e886` and `b30278a`, respectively. The reviewed implementation tree `75a98fc` likewise matches original commit `98e97b8`. Changing commit boundaries did not change application, contract, or test content.
+
+## Current integrated validation — 11 October 2026
+
+Tested commit: `35b1d6e56672eaa4146058576aa90a660ba22ae8`, including contributor PRs #15–17, the Firefox operator helper, and the review fixes. `npm test` passed **11 Foundry tests, 16 Vitest tests, and 72 Playwright scenarios** (99 named tests/scenarios total). The [full log](release-final-tests.log) records the complete run. The [operator log](operator-deploy-tests.log) and [focused recovery log](release-recovery-tests.log) record the targeted checks used before the final suite.
+
+Typechecking, the release build, formatting, and Git whitespace checks passed. The built bundle contains the fresh acceptance address/block and excludes the prior live address. A read-only live browser check loaded the real Sepolia dungeon at revision 0 with the board ready. The main JavaScript bundle is now 576.68 kB (176.74 kB gzip); the Phaser chunk remains 1,196.46 kB (318.59 kB gzip). The chunk warning remains; no new FPS/first-play benchmark is claimed.
+
+The [Vercel release preview](https://ruin-relay-git-codex-issue-1-release-aryas-projects-63ba0614.vercel.app/play) build succeeded for this commit; an unauthenticated HTTP read returned 200 and the served JavaScript contained the correct fresh address/block. The static release preview is also available locally at `http://127.0.0.1:4175/play`, backed by the verified real contract. The remaining release steps need access to the operator's wallet-enabled browser, two real mutations from separate profiles, and the recordings. Computer-use inventory currently reports no connected applications or browsers; the operator's Firefox session is outside this connection.
+
+### Standards follow-up
+
+The integrated review found two P2 documented breaches: recovery queried an unbounded log span and did not deduplicate canonical recovery events. Both are resolved in `d2cdc34`: queries use at most 2,000 blocks from the outset; history and recovery share canonical normalization keyed by chain/hash/log index. Failed or incomplete scans cannot prove absence. The associated duplicated-normalization smell is also resolved. Re-review found no introduced defect.
+
+### Spec follow-up
+
+One P2 code defect is resolved in `739a1ce`: `nonce too low`/already-used nonce remains ambiguous because a wallet/provider retry may report it after a successful broadcast. Fresh event/nonce/receipt checks can recover the actual result. A regression broadcasts through the actual Anvil contract, returns only the nonce error at the wallet boundary, and confirms recovery across reload with one signing request. Re-review found no introduced defect. The P1 two-profile A/B and recording gate remains pending.
+
+Current review totals: Standards two breaches plus one optional smell resolved (original worst P2); Spec one code finding resolved and one acceptance gap pending (worst P1).
 
 ## Release procedure
 
