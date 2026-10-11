@@ -1,6 +1,6 @@
 # Release evidence
 
-Status: local implementation, automated checks, and code review completed. The official Arbitrum Sepolia contract is deployed and Sourcify-verified. Browser-wallet mutations on that contract, and the release recordings, remain **pending**.
+Status: local implementation, automated checks, and code review completed. The fresh acceptance contract is deployed and Sourcify-verified. The required two-wallet browser sequence and release recordings remain **pending**.
 
 ## Issue #1 completion checklist
 
@@ -10,8 +10,8 @@ The latest contributor implementation is on `main` at `08e01b5`; PRs #15, #16, a
 - [x] Record local contract, rules, browser, build, and formatting validation, and address the code-review findings.
 - [x] Fund both selected release wallets with Arbitrum Sepolia ETH and verify their balances on chain ID 421614.
 - [x] Independently verify the contributor deployment, canonical receipts, and Sourcify exact source match.
-- [ ] Approve a fresh acceptance deployment from wallet A in Firefox; the existing live board is already revision 3.
-- [ ] Verify the fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
+- [x] Approve a fresh acceptance deployment from wallet A in Firefox: `0x793c8ad958d6768533bd42412b69173c6b96b3d36a67861462113d04330cbc3b`.
+- [x] Verify the fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
 - [ ] In browser profile A, submit tile 31 from revision 0 and record its real receipt, explorer link, and resulting walls `0xd05b827900a`.
 - [ ] In separate browser profile B, submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
 - [ ] Record gas used for deployment and both real mutations, plus visible board changes and public history.
@@ -40,7 +40,26 @@ The operator reports an existing Firefox wallet extension. Firefox is unavailabl
 
 Local private keys are excluded from Git and blocked by the development server. Wallet A deployed the official contract. Wallet B is the second public testnet account for the pending browser gate.
 
-## Official deployment
+## Fresh acceptance deployment — 11 October 2026
+
+Wallet A deployed the new canonical dungeon through its Firefox wallet. Receipt, sender, nonce, creation bytecode/constructor, creation address, canonical block hash, and initial state were independently checked. Source verification was already available through Sourcify v2 and was confirmed read-only, with exact matches to both repository source files.
+
+| Field                  | Evidence                                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain                  | Arbitrum Sepolia, 421614                                                                                                                                                  |
+| Contract               | [`0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79`](https://sepolia.arbiscan.io/address/0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79)                                            |
+| Deployment transaction | [`0x793c8ad958d6768533bd42412b69173c6b96b3d36a67861462113d04330cbc3b`](https://sepolia.arbiscan.io/tx/0x793c8ad958d6768533bd42412b69173c6b96b3d36a67861462113d04330cbc3b) |
+| Deployer / nonce       | `0x37714b787066ce967d027b752d045e13b8b64a84` / 0                                                                                                                          |
+| Deployment block       | 317967651                                                                                                                                                                 |
+| Gas used               | 602912                                                                                                                                                                    |
+| Initial state          | revision 0; walls `0xd053827900a`; editable mask `0x1f9e7e1cf00`                                                                                                          |
+| Compiler               | Solidity 0.8.24, optimizer 200, Cancun                                                                                                                                    |
+| Source verification    | [Sourcify](https://repo.sourcify.dev/421614/0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79): creation/runtime `exact_match`                                                   |
+| Receipt/source proof   | [acceptance-deployment.json](acceptance-deployment.json)                                                                                                                  |
+
+The browser A/B acceptance sequence uses this address. `.env.example` and the Vercel build command pin the same address/block; the older contributor contract remains historical evidence below. A verified deployment alone does not complete the two-profile mutation or recording gates.
+
+## Previous contributor deployment
 
 Chain 421614 (Arbitrum Sepolia).
 
@@ -76,7 +95,7 @@ Nine focused operator-browser regressions passed on 11 October 2026: stale/risin
 
 ## Rehearsal copy
 
-Measured on a separate Arbitrum Sepolia copy, [`0x57b7461dc06dda9e11159c0e75306e1655545a64`](https://sepolia.arbiscan.io/address/0x57b7461dc06dda9e11159c0e75306e1655545a64). **Label: rehearsal.** These receipts are rehearsal evidence. The browser release gate still requires both mutations on the official contract above.
+Measured on a separate Arbitrum Sepolia copy, [`0x57b7461dc06dda9e11159c0e75306e1655545a64`](https://sepolia.arbiscan.io/address/0x57b7461dc06dda9e11159c0e75306e1655545a64). **Label: rehearsal.** These receipts are rehearsal evidence. The browser release gate requires both mutations on the fresh acceptance deployment above.
 
 | Step                 | Evidence                                                                                                                                                                                                                                      |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -109,7 +128,7 @@ Measured on a separate Arbitrum Sepolia copy, [`0x57b7461dc06dda9e11159c0e75306e
 | Deployment transaction                  | `0xaf9a8e77b68c1b9d9e1952abab04fdc2584ac1b56bc2c0c3169f128fc4b87d1d`                                         |
 | Real UI mutation A, revision 0→1        | Pending on a fresh acceptance deployment                                                                     |
 | Real UI mutation B, revision 1→2        | Pending on a fresh acceptance deployment                                                                     |
-| Sepolia gas estimates / receipts        | Rehearsal copy only (110,473 and 109,803 gas). Official browser receipts pending                             |
+| Sepolia gas estimates / receipts        | Deployment 602,912 gas; fresh A/B browser mutation receipts pending                                          |
 | Product demo ≤3 minutes                 | [English script ready](demo-script.md); recording pending                                                    |
 | Presentation 2–3 minutes                | [English script ready](presentation.md); recording pending                                                   |
 
@@ -130,9 +149,9 @@ Session history was split into atomic commits before publication. The complete-s
 
 ## Release procedure
 
-The existing official contract is already revision 3, and the rehearsal copy already consumed fixture revisions 1 and 2. Complete the required two-wallet sequence on a fresh canonical acceptance deployment, then record and configure the resulting release address.
+The fresh acceptance deployment above starts at revision 0. The prior contributor contract is already revision 3, and the CLI rehearsal copy already consumed revisions 1 and 2.
 
-1. Deploy and verify the fresh canonical dungeon, then configure the browser with its address and block. In profile A, play route `DRRRRURRDDLDLLDDRDRR`, toggle 31, sign, and verify revision 1 / walls `0xd05b827900a`.
+1. Configure the browser with the verified fresh acceptance address and block. In profile A, play route `DRRRRURRDDLDLLDDRDRR`, toggle 31, sign, and verify revision 1 / walls `0xd05b827900a`.
 2. In a separate wallet profile B, play `DRRRRURRDDLDLLLDDRRDRR`, toggle 38, sign, and verify revision 2 / walls `0xd45b827900a`.
 3. Record both real hashes, gas used, visible board differences, public history, and one safety rejection from that acceptance contract.
 4. Capture the English product demo and separate presentation. Describe business/retention ideas as hypotheses until observed evidence exists.
