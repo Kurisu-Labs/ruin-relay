@@ -27,11 +27,13 @@ for (const fault of ['empty', 'missing-latest', 'missing-earlier', 'wrong-mask']
       await route.fulfill({ response, json });
     });
     await open(page);
-    await expect(page.locator('.revision')).toHaveText('Live revision 2');
+    await expect(page.locator('.run-revision')).toContainText('Live revision 2');
     await walk(page, 'D');
+    await page.getByRole('link', { name: 'History', exact: true }).click();
     await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
     await expect(page.locator('.history-list article')).toHaveCount(0);
     await expect(page.getByText('Steps 1 / 96')).toBeVisible();
+    await page.getByRole('button', { name: 'Back to game', exact: true }).click();
     incomplete = false;
     await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
     await expect(page.locator('.history-list article')).toHaveCount(2);
@@ -45,7 +47,7 @@ test('complete history keeps only the ten newest revisions', async ({ page }) =>
     await direct(BigInt(revision), wall31 ? 0x596bfba5156n : 0x59afba5156n, wall31 ? 22 : 20, 31);
   }
   await open(page);
-  await expect(page.locator('.revision')).toHaveText('Live revision 12');
+  await expect(page.locator('.run-revision')).toContainText('Live revision 12');
   const rows = page.locator('.history-list article');
   await expect(rows).toHaveCount(10);
   await expect(rows.first()).toContainText('#12');
