@@ -38,6 +38,8 @@ Browser tests launch their own Anvil and Vite instances on ports 8545 and 4173; 
 
 The fixture is `reference/fixtures.json`: revision 0 → tile 31 → `0xd05b827900a`; revision 1 → tile 38 → `0xd45b827900a`. These are deterministic expectations, not deployment evidence.
 
+Wallet A’s real [Sepolia mutation](https://sepolia.arbiscan.io/tx/0xd2657acdce42c3b8560f757c1aa7a275ae55b412a74b87fbaa6729b82fa20521) is verified: tile 31, revision 0 → 1, walls `0xd05b827900a`, 110473 gas. [Decoded receipt and state evidence](docs/acceptance-mutation-a.json) are recorded. Wallet B’s mutation, separate-profile provenance, and the complete release recordings remain pending.
+
 ## Sepolia setup
 
 The CLI commands below use generated local wallets. The operator-provided Firefox acceptance wallets and their verified funding are recorded in [release evidence](docs/release-evidence.md#prepared-acceptance-wallets); those signing requests require operator interaction.
