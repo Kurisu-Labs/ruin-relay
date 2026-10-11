@@ -1,0 +1,221 @@
+[WebServer] (node:72797) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:72900) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:72940) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/draft-coordination.spec.ts:5:1 › adopting another tab draft discards the old transaction preview after wallet rejection (16.2s)
+(node:73111) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with empty history are unavailable, not empty or complete (13.2s)
+(node:73334) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-latest history are unavailable, not empty or complete (12.5s)
+(node:73457) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  4 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-earlier history are unavailable, not empty or complete (12.9s)
+(node:73614) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with wrong-mask history are unavailable, not empty or complete (12.5s)
+
+
+  1) tests/browser/draft-coordination.spec.ts:5:1 › adopting another tab draft discards the old transaction preview after wallet rejection 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('region', { name: 'Transaction preview' })
+    Expected: 0
+    Received: 1
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('region', { name: 'Transaction preview' }) with timeout 10000ms
+      - waiting for getByRole('region', { name: 'Transaction preview' })
+        24 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      37 |   await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+      38 |   await expect(page.getByRole('button', { name: 'Commit one change' })).toBeEnabled();
+    > 39 |   await expect(page.getByRole('region', { name: 'Transaction preview' })).toHaveCount(0);
+         |                                                                           ^
+      40 |   expect(wallet.requests).toHaveLength(0);
+      41 |   await page.getByRole('button', { name: 'Commit one change' }).click();
+      42 |   await expect(page.getByRole('region', { name: 'Transaction preview' })).toContainText('tile 15');
+        at /home/boyaditya/Coding/ruin-relay/tests/browser/draft-coordination.spec.ts:39:75
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/draft-coordination-adoptin-6acf8-view-after-wallet-rejection/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/draft-coordination-adoptin-6acf8-view-after-wallet-rejection/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/draft-coordination-adoptin-6acf8-view-after-wallet-rejection/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/draft-coordination-adoptin-6acf8-view-after-wallet-rejection/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/draft-coordination-adoptin-6acf8-view-after-wallet-rejection/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with empty history are unavailable, not empty or complete 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('History unavailable.')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('History unavailable.') with timeout 10000ms
+      - waiting for getByText('History unavailable.')
+
+
+      30 |     await expect(page.locator('.revision')).toHaveText('Live revision 2');
+      31 |     await walk(page, 'D');
+    > 32 |     await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
+         |                                                                            ^
+      33 |     await expect(page.locator('.history-list article')).toHaveCount(0);
+      34 |     await expect(page.getByText('Steps 1 / 96')).toBeVisible();
+      35 |     incomplete = false;
+        at /home/boyaditya/Coding/ruin-relay/tests/browser/history-integrity.spec.ts:32:76
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-ef225-lable-not-empty-or-complete/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/history-integrity-successf-ef225-lable-not-empty-or-complete/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-ef225-lable-not-empty-or-complete/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/history-integrity-successf-ef225-lable-not-empty-or-complete/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-latest history are unavailable, not empty or complete 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('History unavailable.')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('History unavailable.') with timeout 10000ms
+      - waiting for getByText('History unavailable.')
+
+
+      30 |     await expect(page.locator('.revision')).toHaveText('Live revision 2');
+      31 |     await walk(page, 'D');
+    > 32 |     await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
+         |                                                                            ^
+      33 |     await expect(page.locator('.history-list article')).toHaveCount(0);
+      34 |     await expect(page.getByText('Steps 1 / 96')).toBeVisible();
+      35 |     incomplete = false;
+        at /home/boyaditya/Coding/ruin-relay/tests/browser/history-integrity.spec.ts:32:76
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-09889-lable-not-empty-or-complete/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/history-integrity-successf-09889-lable-not-empty-or-complete/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-09889-lable-not-empty-or-complete/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/history-integrity-successf-09889-lable-not-empty-or-complete/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-earlier history are unavailable, not empty or complete 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('History unavailable.')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('History unavailable.') with timeout 10000ms
+      - waiting for getByText('History unavailable.')
+
+
+      30 |     await expect(page.locator('.revision')).toHaveText('Live revision 2');
+      31 |     await walk(page, 'D');
+    > 32 |     await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
+         |                                                                            ^
+      33 |     await expect(page.locator('.history-list article')).toHaveCount(0);
+      34 |     await expect(page.getByText('Steps 1 / 96')).toBeVisible();
+      35 |     incomplete = false;
+        at /home/boyaditya/Coding/ruin-relay/tests/browser/history-integrity.spec.ts:32:76
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-e6737-lable-not-empty-or-complete/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/history-integrity-successf-e6737-lable-not-empty-or-complete/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-e6737-lable-not-empty-or-complete/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/history-integrity-successf-e6737-lable-not-empty-or-complete/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with wrong-mask history are unavailable, not empty or complete 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('History unavailable.')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('History unavailable.') with timeout 10000ms
+      - waiting for getByText('History unavailable.')
+
+
+      30 |     await expect(page.locator('.revision')).toHaveText('Live revision 2');
+      31 |     await walk(page, 'D');
+    > 32 |     await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
+         |                                                                            ^
+      33 |     await expect(page.locator('.history-list article')).toHaveCount(0);
+      34 |     await expect(page.getByText('Steps 1 / 96')).toBeVisible();
+      35 |     incomplete = false;
+        at /home/boyaditya/Coding/ruin-relay/tests/browser/history-integrity.spec.ts:32:76
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-8ca6c-lable-not-empty-or-complete/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/history-integrity-successf-8ca6c-lable-not-empty-or-complete/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/history-integrity-successf-8ca6c-lable-not-empty-or-complete/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/history-integrity-successf-8ca6c-lable-not-empty-or-complete/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    tests/browser/draft-coordination.spec.ts:5:1 › adopting another tab draft discards the old transaction preview after wallet rejection 
+    tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with empty history are unavailable, not empty or complete 
+    tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-latest history are unavailable, not empty or complete 
+    tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-earlier history are unavailable, not empty or complete 
+    tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with wrong-mask history are unavailable, not empty or complete 

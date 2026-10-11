@@ -1,6 +1,6 @@
 # Release evidence
 
-Status: local implementation, automated checks, and code review completed. The fresh acceptance contract is deployed and Sourcify-verified. Both canonical mutations are confirmed: wallet A created revision 1 with tile 31, then wallet B created revision 2 with tile 38. The operator confirmed separate browser profiles. Release recordings remain **pending**.
+Status: local implementation, automated checks, and code review completed. The fresh acceptance contract is deployed and Sourcify-verified. Both canonical mutations are confirmed: wallet A created revision 1 with tile 31, then wallet B created revision 2 with tile 38. The operator confirmed separate browser profiles. The operator deferred hackathon recordings on 11 October 2026 to prioritize product correctness; see [product validation](product-validation.md).
 
 ## Issue #1 completion checklist
 
@@ -18,10 +18,10 @@ The latest contributor implementation is on `main` at `08e01b5`; PRs #15, #16, a
 - [x] In separate browser profile B (operator-confirmed), submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
 - [x] Record gas used for deployment and both real mutations; verify both public history entries in the hosted UI.
 - [ ] Include the visible board changes in the complete demo recording.
-- [ ] Include a safety-rejection demonstration and the keyboard/mobile inspection evidence in the release materials.
+- [x] Inspect keyboard play, mobile readability, and safety rejection; retain [product UI evidence](product-validation.md). Video packaging is deferred with the hackathon materials.
 - [ ] Record the English product demo (at most three minutes) and separate presentation (two to three minutes).
 
-Keep issue #1 open until the unchecked release requirements have verifiable evidence. Keep the release PR in draft while these gates are pending. Local Anvil hashes, a CLI rehearsal, and recording scripts do not satisfy the real two-profile browser demonstration. The commands and canonical routes are documented below and in the README.
+The operator explicitly deferred hackathon recording work on 11 October 2026. It remains tracked by [release-materials issue #13](https://github.com/Kurisu-Labs/ruin-relay/issues/13); it does not block technical review of product fixes. Issue #1 remains the parent specification. Product review readiness depends on passing the technical checks and resolving actionable findings. Local Anvil hashes, a CLI rehearsal, and recording scripts are not presented as actual Sepolia recordings.
 
 ## Public test-wallet setup
 
