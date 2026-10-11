@@ -1,0 +1,9 @@
+Isolated worktree: /tmp/ruin-relay-issue5
+Anvil RPC: 8547; Vite: 4175 (temporary config/helper substitutions restored after tests).
+RED: npx playwright test observations --grep 'a pending edit' --config issue5.config.ts
+Temporary repro probe: wait for COMMIT ATTEMPT · REVERTED between filling known hash and Verify hash click.
+1 failed (6.4s): TimeoutError: locator.click: Timeout 2000ms exceeded; waiting for getByRole('button', { name: 'Verify hash', exact: true }).
+GREEN: npx playwright test observations --grep 'a pending edit' --repeat-each 5 --config issue5.config.ts
+5 passed (1.1m); case durations 14.7s, 12.7s, 9.9s, 7.1s, 5.7s.
+All repeats assert rebroadcast hash equals original known wallet hash and actual receipt status equals 0x0, plus unchanged stale/reload/no-success assertions and exactly one wallet request.
+Additional observations/independent-race run cancelled before tests began at root request: 11 did not run.

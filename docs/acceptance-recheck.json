@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-11T13:18:57.673Z",
+  "chainId": 421614,
+  "address": "0xf1ee7e1d9814e0ac2ddc3dd180a58f9698cc0d79",
+  "block": "318086078",
+  "before": [
+    "14593093505034",
+    "2",
+    "2172848819968"
+  ],
+  "rejection": "InvalidMoveCount",
+  "after": [
+    "14593093505034",
+    "2",
+    "2172848819968"
+  ],
+  "method": "Read-only eth_call; no transaction signed or broadcast",
+  "receipts": [
+    {
+      "hash": "0xd2657acdce42c3b8560f757c1aa7a275ae55b412a74b87fbaa6729b82fa20521",
+      "status": "success",
+      "block": "317984408",
+      "canonical": true
+    },
+    {
+      "hash": "0x08647c14c04e4c3732c2641664f301261977cffd3abe52e12d4bc08627b0c16f",
+      "status": "success",
+      "block": "317986584",
+      "canonical": true
+    }
+  ]
+}

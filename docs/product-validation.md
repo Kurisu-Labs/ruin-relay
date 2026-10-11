@@ -39,3 +39,35 @@ These hosted UI screenshots were captured before the two fixes were deployed; th
 ## Limits
 
 This is execution and review evidence, not a guarantee that no undiscovered bug exists or an independent security audit. First-play time and 60 FPS targets were not benchmarked. The existing build warning about large application/Phaser chunks remains a performance consideration. Wallet-extension side-panel support is a limitation of the in-app browser used by the agent; the operator’s two real wallet transactions succeeded through their separate profiles. Hackathon recording and submission work is explicitly deferred.
+
+## Issues #2–#12 acceptance follow-up — 11 October 2026
+
+The operator requested reconciliation of issues #2–#12 and explicitly kept videos deferred in #13. The existing product was already merged through PR #14; the follow-up integration branch is `codex/issues-2-12-integration`, reviewed against merge commit `d22b32f`. No production code or deployment changed.
+
+Seven additional browser scenarios close explicit coverage gaps:
+
+- Two independent browser profiles both complete the fixture and simulate before signing. The first mutation succeeds, the second receives a mined stale-revision revert, and its frozen run, Restart, Play latest, history and signing-request count stay correct.
+- Manually linked pending speed-up and cancellation transactions survive reload, retain original/replacement hashes, and resolve only from canonical inclusion. A same-sender cancellation cannot supply missing original nonce evidence.
+- Orphaned cancellation and different-action replacement outcomes lose terminal status, remain locked across reload, and verify re-inclusion of the identical signed transaction. A two-tab contribution test also withdraws orphaned success/history, preserves the run and locks, and restores confirmation after re-inclusion without another wallet request.
+
+These tests use the existing browser/provider/RPC boundary and real Anvil state transitions. Harness rebroadcasts create controlled re-inclusion; they are not application retries or new wallet requests. ADR-032 remains the governing decision for hashless outcomes. No new product defect was found by these scenarios.
+
+The prior 106-test product baseline was rerun successfully. Each new scenario also passed in its implementer's worktree. The final assembled run on commit `2cce601` passed **113 tests/scenarios**: 11 Foundry tests (three fuzz tests with 256 cases each), 16 Vitest tests, and 86 Playwright scenarios. Typecheck passed as part of that run, which completed before `2026-10-11T13:39:19Z`. The unchanged production application also passed build and formatting checks. See [final integrated test log](issue-acceptance-tests.log), [build log](issue-acceptance-build.log), and [formatting log](issue-acceptance-format.log). Browser scenarios ran sequentially with one worker; no application/test edits occurred during the final run.
+
+### Fresh public-chain observation
+
+At `2026-10-11T13:18:57.673Z`, a read-only check at Arbitrum Sepolia block `318086078` found both existing A/B mutation receipts successful and canonical. The acceptance contract remained revision 2 with walls `0xd45b827900a` and editable mask `0x1f9e7e1cf00`. A direct invalid-move `eth_call` returned `InvalidMoveCount`; before/after reads at that block matched. No transaction was signed or broadcast. See [machine-readable recheck](acceptance-recheck.json).
+
+This read-only check supplements the existing genuine deployment and two-wallet evidence. It is not a replacement for the deferred recordings or a claim of Ethereum L1 finality.
+
+### Follow-up review
+
+The code-review skill ran independent Standards and Spec reviews of `d22b32f...8f26d98`. Standards found no actionable documented-standard violations or code-smell findings. Spec found no missing or incorrect behavior in the seven added acceptance scenarios and no conflict with ADR-032. These reviews cover the follow-up delta; the earlier product review remains recorded above.
+
+### Existing test race found during the combined run
+
+The first assembled run passed 85 browser scenarios and timed out in the pre-existing stale-receipt scenario while clicking **Verify hash**. The app had already reached `REVERTED` through automatic receipt tracking and removed that form. The original-hash rebroadcast had succeeded as intended; this was a test orchestration race, not a product failure. The failure is retained in [initial combined run](issue-acceptance-initial-tests.log).
+
+A focused reproduction allowed polling to reach `REVERTED` before the redundant click and reproduced the missing-control timeout. The repair removes that click for this already-known hash, explicitly checks identical hash and reverted receipt, retains stale explanation/no-contribution/reload/Play latest assertions, and asserts only one wallet signing request. The corrected case passed five consecutive runs. Dedicated manual hash recovery scenarios remain unchanged.
+
+Both reviewers rechecked the deterministic test repair (`8f26d98...2cce601`) and found zero actionable findings. The five focused passes are retained in [repair validation](issue-acceptance-race-repair.log). Later commits only record this evidence; they do not change the tested product or scenarios.

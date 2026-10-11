@@ -1,0 +1,6 @@
+
+> ruin-relay@0.1.0 format:check
+> prettier --check src tests scripts *.config.ts tsconfig.json package.json .prettierrc.json README.md docs/release-evidence.md docs/demo-script.md docs/presentation.md
+
+Checking formatting...
+All matched files use Prettier code style!
