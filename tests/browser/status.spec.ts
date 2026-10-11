@@ -64,7 +64,10 @@ test('own confirmation explains the new revision and history updates without a s
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Commit one change' })).toBeDisabled();
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.locator('#history')).toBeVisible();
   await expect(page.locator('.history-list article')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Back to game', exact: true }).click();
   await direct(1n, 0x596bfba5156n, 22, 38, 1);
   await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
   await expect(
@@ -73,6 +76,8 @@ test('own confirmation explains the new revision and history updates without a s
   await expect(page.locator('.success')).toContainText(
     'Your edit created revision #1. The dungeon is now at revision #2.',
   );
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.locator('#history')).toBeVisible();
   await expect(page.locator('.history-list article')).toHaveCount(2);
 });
 
@@ -101,6 +106,8 @@ test('a verified contribution stays in history when the head block moves during 
   await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
   releaseLogs();
   await pending;
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.locator('#history')).toBeVisible();
   await expect(page.locator('.history-list article')).toHaveCount(1);
   await expect(page.locator('.history-list')).toContainText('Tile 31');
 });

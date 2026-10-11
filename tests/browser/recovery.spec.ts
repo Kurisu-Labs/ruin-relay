@@ -247,6 +247,8 @@ test('orphaned confirmation is withdrawn, locks the attempt, and removes orphane
   await page.getByRole('button', { name: 'Refresh status' }).click();
   await expect(page.locator('.success')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.locator('#history')).toBeVisible();
   await expect(page.locator('.history-list article')).toHaveCount(0);
 });
 

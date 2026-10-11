@@ -24,6 +24,8 @@ test('two wallet profiles contribute the exact canonical revisions and public hi
     'Your edit created revision #2. The dungeon is now at revision #2.',
   );
   expect(walletB.requests).toHaveLength(1);
+  await pageB.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(pageB.locator('#history')).toBeVisible();
   await expect(pageB.locator('.history-list article')).toHaveCount(2);
   await contextB.close();
 });

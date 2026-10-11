@@ -1,13 +1,13 @@
-import { test, expect, open } from './helpers';
+import { test, expect, open, walk } from './helpers';
 import fixture from '../../reference/fixtures.json' with { type: 'json' };
 test('rapid keys are applied once even when animation frames pause', async ({ page }) => {
   await open(page);
   await page.clock.install();
   await page.clock.pauseAt(Date.now() + 1000);
   await page.getByRole('application').focus();
-  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('w');
   await expect(page.locator('.steps')).toHaveText('Steps 1 / 96');
-  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('a');
   await expect(page.getByRole('application')).toHaveAttribute('aria-label', /Player at tile 8\./);
   await expect(page.locator('.steps')).toHaveText('Steps 2 / 96');
   await page.keyboard.press('r');
@@ -20,13 +20,10 @@ test('wallet-free escape opens a one-tile editor with a bounded solvability prev
   await expect(page.getByText('Steps 0 / 96')).toBeVisible();
   await expect(page.getByRole('application')).toHaveAttribute('aria-busy', 'false');
   await page.getByRole('application').focus();
-  await page.keyboard.press('ArrowUp');
-  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('s');
+  await page.keyboard.press('a');
   await expect(page.getByText('Steps 0 / 96')).toBeVisible();
-  for (const direction of fixture.revisions[0].path)
-    await page.keyboard.press(
-      { U: 'ArrowUp', R: 'ArrowRight', D: 'ArrowDown', L: 'ArrowLeft' }[direction]!,
-    );
+  await walk(page, fixture.revisions[0].path);
   await expect(page.getByText('Dungeon Escaped!')).toBeVisible();
   await expect(page.locator('#commit-help')).toHaveText(
     'Choose a highlighted floor to add a wall, or a highlighted wall to remove it.',

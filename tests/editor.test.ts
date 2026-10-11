@@ -46,8 +46,8 @@ vi.mock('react', async (importOriginal) => {
 import App from '../src/App';
 import { wallet } from '../src/lib/wallet';
 
-function renderCommit() {
-  const html = renderToStaticMarkup(createElement(App));
+function renderCommit(initialPath = '/play') {
+  const html = renderToStaticMarkup(createElement<{ initialPath?: string }>(App, { initialPath }));
   const button = html.match(/<button\b[^>]*>Commit one change<\/button>/)?.[0];
   return { html, button };
 }
@@ -79,6 +79,37 @@ beforeEach(async () => {
   harness.relay!.select(31);
 });
 afterEach(() => vi.unstubAllGlobals());
+
+it('shows a resumable lobby by default and keeps the editor on the dedicated play route', () => {
+  const run = harness.relay!.state.run;
+  const lobby = renderToStaticMarkup(createElement(App));
+  expect(lobby).toContain('Resume your run');
+  expect(lobby).toContain('href="/play"');
+  expect(lobby).not.toContain('Explore in 3D');
+  expect(lobby).not.toContain('href="/play/3d"');
+  expect(lobby).not.toContain('role="application"');
+  expect(lobby).not.toContain('Commit one change');
+  expect(renderCommit().button).toBeDefined();
+  expect(harness.relay!.state.run).toBe(run);
+  expect(harness.relay!.state.tile).toBe(31);
+});
+
+it('uses the same 3D run, selected edit and commit gates on both supported URLs', () => {
+  const relay = connectedDungeon();
+  const run = relay.state.run;
+  const canonical = renderCommit();
+  const threeD = renderCommit('/play/3d');
+  expect(threeD.html).toContain('3D dungeon. Player at tile 48.');
+  expect(threeD.html).toContain('data-view="map"');
+  expect(threeD.html).not.toContain('Switch to 2D');
+  expect(canonical.html).toContain('3D dungeon. Player at tile 48.');
+  expect(threeD.html).toContain('Tile 31:');
+  expect(threeD.button).toBe(canonical.button);
+  expect(threeD.button).not.toContain('disabled');
+  expect(relay.state.run).toBe(run);
+  expect(relay.state.tile).toBe(31);
+  expect(wallet).not.toHaveBeenCalled();
+});
 
 it('explains why a valid wall preview cannot be committed in practice, without asking for a wallet', async () => {
   const { html, button } = renderCommit();
@@ -202,11 +233,11 @@ it.each([
 it('keeps the full map unavailable during play and opens it only for the escaped editor', () => {
   const relay = harness.relay!;
   relay.restart();
-  expect(renderCommit().html).toContain('data-view="follow"');
+  expect(renderCommit().html).toContain('data-view="first-person"');
   expect(renderCommit().html).not.toContain('Full dungeon');
   for (const direction of fixture.revisions[0].path) relay.move(direction as 'U' | 'R' | 'D' | 'L');
   expect(renderCommit().html).toContain('data-view="map"');
   expect(renderCommit().html).not.toContain('Full dungeon');
   relay.restart();
-  expect(renderCommit().html).toContain('data-view="follow"');
+  expect(renderCommit().html).toContain('data-view="first-person"');
 });
