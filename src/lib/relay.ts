@@ -5,6 +5,7 @@ import { configured, deployment } from '../config/deployment';
 import {
   calldata,
   client,
+  commitFeeCap,
   readDungeon,
   readHistory,
   sameAction,
@@ -14,6 +15,7 @@ import {
 } from './chain';
 import { Journal } from './journal';
 import {
+  SIGNING_STATUS,
   sameDungeon,
   unresolved,
   type Attempt,
@@ -22,12 +24,14 @@ import {
   type Snapshot,
 } from './model';
 import { EXIT, MAX_MOVES, move, pack, preview, type Direction } from './rules';
-import { explain, rejected, switchNetwork, wallet } from './wallet';
+import { explain, isDeploymentChain, notBroadcast, switchNetwork, wallet } from './wallet';
 
 interface Prepared {
   account: Address;
   gas: bigint;
   fee: bigint;
+  maxFeePerGas: bigint;
+  maxPriorityFeePerGas: bigint;
   run: Run;
   tile: number;
 }
@@ -63,9 +67,13 @@ export class Relay {
   private journal = new Journal();
   private listeners = new Set<() => void>();
   private refreshing?: Promise<void>;
+  private queuedRefresh?: Promise<void>;
   private requestInFlight = false;
+  private signingId?: string;
   private watching = new Set<string>();
   private historyTask?: Promise<void>;
+  private historySnapshot?: Snapshot;
+  private historyStale = false;
   state: View = {
     online: false,
     busy: false,
@@ -121,19 +129,68 @@ export class Relay {
     }
     await this.refresh();
   }
-  refresh = () => {
-    if (this.refreshing || !configured) return this.refreshing ?? Promise.resolve();
+  refresh = (): Promise<void> => {
+    if (!configured) return Promise.resolve();
+    if (this.refreshing) {
+      this.queuedRefresh ??= this.refreshing.then(() => {
+        this.queuedRefresh = undefined;
+        return this.refresh();
+      });
+      return this.queuedRefresh;
+    }
     this.refreshing = this.refreshNow().finally(() => {
       this.refreshing = undefined;
     });
     return this.refreshing;
   };
+  private keepOpenSigning(attempts: Attempt[]) {
+    if (!this.signingId) return attempts;
+    const id = this.signingId;
+    const local = this.state.attempts.find((attempt) => attempt.id === id);
+    const synced = attempts.find((attempt) => attempt.id === id);
+    if (local && local.state !== 'signing') {
+      if (!synced || (synced.state === 'signing' && !synced.activeHash))
+        return [...attempts.filter((attempt) => attempt.id !== id), local];
+      return attempts;
+    }
+    const source = synced ?? local;
+    if (!source || source.activeHash) return attempts;
+    return [
+      ...attempts.filter((attempt) => attempt.id !== id),
+      { ...source, state: 'signing' as const, mutation: undefined, message: SIGNING_STATUS },
+    ];
+  }
+  private loadHistory(live: Snapshot) {
+    if (this.historyTask) {
+      if (this.historySnapshot && !sameDungeon(this.historySnapshot, live))
+        this.historyStale = true;
+      return;
+    }
+    this.historySnapshot = live;
+    this.historyTask = readHistory(live)
+      .then((history) => {
+        // A newer head block is not a new dungeon. Keep the read when the
+        // revision and walls still match, and refetch only when they do not.
+        if (this.state.live && sameDungeon(this.state.live, live))
+          this.set({ history, historyError: false });
+        else this.historyStale = true;
+      })
+      .catch(() => this.set({ history: [], historyError: true }))
+      .finally(() => {
+        this.historyTask = undefined;
+        const next = this.state.live;
+        if (this.historyStale && next) {
+          this.historyStale = false;
+          this.loadHistory(next);
+        }
+      });
+  }
   private async refreshNow() {
     try {
       const live = await readDungeon();
       let attempts = this.state.attempts;
       try {
-        attempts = await this.journal.sync(live);
+        attempts = await this.journal.sync(live, this.signingId);
         this.set({ recoveryError: undefined });
       } catch {
         this.set({
@@ -142,6 +199,7 @@ export class Relay {
         });
         attempts = invalidateObservations(attempts);
       }
+      attempts = this.keepOpenSigning(attempts);
       const restored = attempts.find(unresolved);
       this.set({
         live,
@@ -158,25 +216,17 @@ export class Relay {
       });
       for (const attempt of attempts)
         if (unresolved(attempt) && attempt.activeHash) this.watch(attempt.activeHash, attempt.id);
-      if (!this.historyTask) {
-        this.historyTask = readHistory(live)
-          .then((history) => {
-            if (this.state.live?.blockHash === live.blockHash)
-              this.set({ history, historyError: false });
-          })
-          .catch(() => this.set({ history: [], historyError: true }))
-          .finally(() => {
-            this.historyTask = undefined;
-          });
-      }
+      this.loadHistory(live);
     } catch {
       this.set({
         online: false,
         history: [],
         historyError: true,
-        attempts: invalidateObservations(
-          this.state.attempts,
-          'Observation unavailable. Still checking your transaction.',
+        attempts: this.keepOpenSigning(
+          invalidateObservations(
+            this.state.attempts,
+            'Observation unavailable. Still checking your transaction.',
+          ),
         ),
       });
     }
@@ -245,7 +295,7 @@ export class Relay {
           'Atomic coordination across tabs is unavailable. Local play works; Commit is disabled.',
         );
       const connected = await wallet();
-      if ((await connected.getChainId()) !== deployment.chainId) throw new Error('Wrong network');
+      if (!isDeploymentChain(await connected.getChainId())) throw new Error('Wrong network');
       const live = await readDungeon();
       this.set({ live, online: true });
       if (!this.eligible()) throw new Error('Stale run');
@@ -267,8 +317,10 @@ export class Relay {
         args,
         account,
       });
-      const fee = gas * (await client.getGasPrice());
-      this.set({ prepared: { run, tile, account, gas, fee } });
+      const fees = await commitFeeCap();
+      this.set({
+        prepared: { run, tile, account, gas, fee: gas * fees.maxFeePerGas, ...fees },
+      });
     } catch (error) {
       this.set({ error: explain(error) });
     } finally {
@@ -286,7 +338,7 @@ export class Relay {
       const [account] = await connected.getAddresses();
       if (
         account.toLowerCase() !== prepared.account.toLowerCase() ||
-        (await connected.getChainId()) !== deployment.chainId
+        !isDeploymentChain(await connected.getChainId())
       )
         throw new Error('Account or network changed before signing');
       const live = await readDungeon();
@@ -300,10 +352,11 @@ export class Relay {
         args: [run.snapshot.revision, pack(run.path), run.path.length, tile],
         account,
       });
-      const requestedNonce = await client.getTransactionCount({
-        address: account,
-        blockTag: 'pending',
-      });
+      const [pendingNonce, latestNonce] = await Promise.all([
+        client.getTransactionCount({ address: account, blockTag: 'pending' }),
+        client.getTransactionCount({ address: account, blockTag: 'latest' }),
+      ]);
+      const fees = await commitFeeCap();
       attempt = {
         id: crypto.randomUUID(),
         run,
@@ -314,18 +367,28 @@ export class Relay {
         state: 'signing',
         hashes: [],
         observed: [],
-        requestedNonce,
+        requestedNonce: pendingNonce,
+        nonceAtSign: { pending: pendingNonce, latest: latestNonce },
+        maxFeePerGas: fees.maxFeePerGas,
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+        message: SIGNING_STATUS,
       };
-      this.set({ attempts: await this.journal.claim(attempt, live), prepared: undefined });
+      if (!(await this.journal.beginInflight()))
+        throw new Error(
+          'An edit is already in progress for this dungeon. Check its status before submitting another.',
+        );
+      const claimed = await this.journal.claim(attempt, live);
+      this.signingId = attempt.id;
+      this.requestInFlight = true;
+      this.set({ attempts: claimed, prepared: undefined });
       // Recheck immediately before the request; subsequent wallet events cannot change this attempt.
       const [activeAccount] = await connected.getAddresses();
       if (
         activeAccount.toLowerCase() !== account.toLowerCase() ||
-        (await connected.getChainId()) !== deployment.chainId
+        !isDeploymentChain(await connected.getChainId())
       )
         throw new Error('Account or network changed before signing');
       issued = true;
-      this.requestInFlight = true;
       const hash = await connected.sendTransaction({
         account,
         chain: connected.chain,
@@ -333,7 +396,9 @@ export class Relay {
         value: 0n,
         data: attempt.calldata,
         gas: prepared.gas,
-        nonce: requestedNonce,
+        nonce: pendingNonce,
+        maxFeePerGas: fees.maxFeePerGas,
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       });
       const id = attempt.id;
       this.set({
@@ -361,19 +426,23 @@ export class Relay {
       }
       this.watch(hash, id);
     } catch (error) {
+      // `issued` means the wallet request was sent, not that a transaction was
+      // accepted. Only a definitive pre-broadcast rejection releases the journal.
+      const beforeBroadcast = !issued || notBroadcast(error);
       if (attempt)
         this.set({
           attempts: await this.journal.update(attempt.id, (a) => ({
             ...a,
-            state: !issued || rejected(error) ? 'rejected' : 'unknown',
-            message:
-              !issued || rejected(error)
-                ? 'Wallet request rejected. Your run and edit are preserved.'
-                : 'Check your wallet for this transaction. Recover with transaction hash if available.',
+            state: beforeBroadcast ? 'rejected' : 'unknown',
+            message: beforeBroadcast
+              ? explain(error)
+              : 'Check your wallet for this transaction. Recover with transaction hash if available.',
           })),
         });
       this.set({ error: explain(error) });
     } finally {
+      this.journal.endInflight();
+      this.signingId = undefined;
       this.requestInFlight = false;
       this.set({ busy: false });
       await this.refresh();

@@ -58,6 +58,15 @@ export interface Attempt {
   observed: ObservedTransaction[];
   inclusion?: { blockNumber: bigint; blockHash: Hash };
   requestedNonce?: number;
+  /**
+   * Account nonce captured before the signing request.
+   * `latest` is the next included nonce; `pending` includes the txpool.
+   * Absent on journals saved before this field existed.
+   */
+  nonceAtSign?: { pending: number; latest: number };
+  /** EIP-1559 cap submitted with this attempt. Absent on attempts saved before fee pinning. */
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
   mutation?: Mutation;
   message?: string;
 }
@@ -69,3 +78,23 @@ export const sameDungeon = (a: Snapshot, b: Snapshot) =>
   a.revision === b.revision &&
   a.walls === b.walls &&
   a.editableMask === b.editableMask;
+export const SIGNING_STATUS =
+  'Waiting for wallet confirmation… Approve or reject the request in your wallet.';
+
+/** Revision created by this run when that verified mutation is the whole live dungeon. */
+export function ownConfirmedRevision(run: Run, live: Snapshot, attempts: Attempt[]) {
+  return attempts.find((attempt) => {
+    const mutation = attempt.mutation;
+    return (
+      attempt.state === 'confirmed' &&
+      mutation !== undefined &&
+      sameDungeon(attempt.run.snapshot, run.snapshot) &&
+      mutation.revision === run.snapshot.revision + 1n &&
+      live.chainId === run.snapshot.chainId &&
+      live.address.toLowerCase() === run.snapshot.address.toLowerCase() &&
+      live.editableMask === run.snapshot.editableMask &&
+      live.revision === mutation.revision &&
+      live.walls === mutation.wallMask
+    );
+  })?.mutation?.revision;
+}

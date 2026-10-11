@@ -1,16 +1,17 @@
 # Release evidence
 
-Status: local implementation, automated checks, and code review completed. The Sepolia release is **not complete**.
+Status: local implementation, automated checks, and code review completed. The official Arbitrum Sepolia contract is deployed and Sourcify-verified. Browser-wallet mutations on that contract, and the release recordings, remain **pending**.
 
 ## Issue #1 completion checklist
 
-The implementation is already on `main` at `3019097`. This release follow-up tracks the remaining acceptance evidence for [issue #1](https://github.com/Kurisu-Labs/ruin-relay/issues/1).
+The latest contributor implementation is on `main` at `08e01b5`; PRs #15, #16, and #17 are merged. This release follow-up tracks the remaining acceptance evidence for [issue #1](https://github.com/Kurisu-Labs/ruin-relay/issues/1).
 
 - [x] Implement the contract, wallet-free game, fixed run snapshots, edit drafts, durable commit attempts, recovery, and public history.
 - [x] Record local contract, rules, browser, build, and formatting validation, and address the code-review findings.
 - [x] Fund both selected release wallets with Arbitrum Sepolia ETH and verify their balances on chain ID 421614.
-- [ ] Connect wallet A through its Firefox extension and approve the deployment request.
-- [ ] Deploy a fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
+- [x] Independently verify the contributor deployment, canonical receipts, and Sourcify exact source match.
+- [ ] Approve a fresh acceptance deployment from wallet A in Firefox; the existing live board is already revision 3.
+- [ ] Verify the fresh canonical dungeon and record the address, deployment block/hash, compiler settings, and successful public source/ABI verification.
 - [ ] In browser profile A, submit tile 31 from revision 0 and record its real receipt, explorer link, and resulting walls `0xd05b827900a`.
 - [ ] In separate browser profile B, submit tile 38 against the same deployment at revision 1 and record its real receipt, explorer link, and resulting walls `0xd45b827900a`.
 - [ ] Record gas used for deployment and both real mutations, plus visible board changes and public history.
@@ -21,7 +22,7 @@ Keep issue #1 open until the unchecked release requirements have verifiable evid
 
 ## Public test-wallet setup
 
-### Selected release wallets
+### Prepared acceptance wallets
 
 Provided by the operator on 10 October 2026 (Asia/Jakarta). Funding was verified at 23:30:01 WIB on chain 421614, block `317791963`, hash `0x69a78fd952457622c9d28a33eab2890997027776a8b0292a3c6bec0558bc07e2`:
 
@@ -32,16 +33,50 @@ Provided by the operator on 10 October 2026 (Asia/Jakarta). Funding was verified
 
 The operator reports an existing Firefox wallet extension. Firefox is unavailable through this session's browser-control connection, so wallet approvals require operator interaction. The real A/B demonstration requires separate Firefox profiles. Funding is complete; deployment signing is pending. The CLI signer remains configured for the generated local wallets. These addresses and balances are not deployment or mutation evidence.
 
-### Generated local wallets
-
-Generated on 10 October 2026 (Asia/Jakarta):
-
 | Purpose             | Address                                      |
 | ------------------- | -------------------------------------------- |
-| Deployer / player A | `0xF7A09917313f2740990de8AA236077Be198ccD69` |
-| Player B            | `0x1b75EB514FAEE2E788D313001A41b1D0bd59ea0F` |
+| Deployer / player A | `0x39A2862c0c8A1feF97644960F873B8cBa7f58dAa` |
+| Player B            | `0x9Bd92C5A3A164c6488bbBff842F9500b4DA47b7a` |
 
-Local private keys are excluded from Git and blocked by the development server. Both addresses had a balance of **0 Arbitrum Sepolia ETH** when checked. Test ETH funding remains pending. These addresses are not deployment or mutation evidence.
+Local private keys are excluded from Git and blocked by the development server. Wallet A deployed the official contract. Wallet B is the second public testnet account for the pending browser gate.
+
+## Official deployment
+
+Chain 421614 (Arbitrum Sepolia).
+
+| Field                  | Evidence                                                                                                                                                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contract               | [`0xDaFc851910D91D54916349EECB8d320a5a56b988`](https://sepolia.arbiscan.io/address/0xDaFc851910D91D54916349EECB8d320a5a56b988)                                                                                                               |
+| Deployment transaction | [`0xaf9a8e77b68c1b9d9e1952abab04fdc2584ac1b56bc2c0c3169f128fc4b87d1d`](https://sepolia.arbiscan.io/tx/0xaf9a8e77b68c1b9d9e1952abab04fdc2584ac1b56bc2c0c3169f128fc4b87d1d)                                                                    |
+| Deployment block       | 317783571                                                                                                                                                                                                                                    |
+| Deployer               | `0x39A2862c0c8A1feF97644960F873B8cBa7f58dAa`                                                                                                                                                                                                 |
+| Source verification    | Sourcify `exact_match`, chain 421614 ([Sourcify contract](https://repo.sourcify.dev/421614/0xDaFc851910D91D54916349EECB8d320a5a56b988), [v2 API](https://sourcify.dev/server/v2/contract/421614/0xDaFc851910D91D54916349EECB8d320a5a56b988)) |
+
+The required two-wallet browser acceptance sequence remains pending; the live mutations audited below already advanced this contract to revision 3. `scripts/sepolia.mjs` previously sent verification to Blockscout at `https://arbitrum-sepolia.blockscout.com/api/`. Cloudflare blocks that API. The match above is the Sourcify result, and `verify` now uses Foundry's Sourcify verifier.
+
+## Independent contributor audit — 11 October 2026
+
+The public RPC confirmed the official deployment receipt as successful and canonical: block 317783571, 602,912 gas. Sourcify v2 reports both creation and runtime `exact_match`, Solidity `0.8.24+commit.e11b9ed9`, optimizer 200, Cancun. The old `/contracts/full_match/.../metadata.json` URL returns 404; the current lookup is the v2 API linked above.
+
+At 11:35:37 WIB, the live dungeon was revision **3**, walls `0xc05f827900a`, with the canonical editable mask `0x1f9e7e1cf00`. All three current mutations have successful canonical receipts and the same editor, `0x072483f4c3208a4115e8263358FC71c79Cd9D86D`:
+
+| Revision | Tile | Walls           | Gas used | Transaction                                                                                                                                                               |
+| -------- | ---- | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1        | 31   | `0xd05b827900a` | 110473   | [`0xd46006bf58dd6603aa1f1ca4c6a25fe835ba0b26e679596f39eb9c723c737ee6`](https://sepolia.arbiscan.io/tx/0xd46006bf58dd6603aa1f1ca4c6a25fe835ba0b26e679596f39eb9c723c737ee6) |
+| 2        | 40   | `0xc05b827900a` | 97567    | [`0x6a08095397a41a221789e7c28d5a512ae6bccd9083c9c938ac20c3860ced0cf9`](https://sepolia.arbiscan.io/tx/0x6a08095397a41a221789e7c28d5a512ae6bccd9083c9c938ac20c3860ced0cf9) |
+| 3        | 30   | `0xc05f827900a` | 94173    | [`0xd6fb25ebfa272876b5e1532d3502bebd5850efcd41e38f5110951e455e77907b`](https://sepolia.arbiscan.io/tx/0xd6fb25ebfa272876b5e1532d3502bebd5850efcd41e38f5110951e455e77907b) |
+
+The [machine-readable audit](official-chain-audit.json) retains transaction inputs, senders, inclusion blocks/hashes, events, and gas. The required separate-profile, two-wallet, tile 31 → tile 38 sequence on a fresh deployment remains pending. Existing live revisions cannot be reset; the prepared acceptance wallets must use a fresh canonical deployment for that sequence. Browser-profile provenance and release videos cannot be inferred from chain receipts.
+
+## Rehearsal copy
+
+Measured on a separate Arbitrum Sepolia copy, [`0x57b7461dc06dda9e11159c0e75306e1655545a64`](https://sepolia.arbiscan.io/address/0x57b7461dc06dda9e11159c0e75306e1655545a64). **Label: rehearsal.** These receipts are rehearsal evidence. The browser release gate still requires both mutations on the official contract above.
+
+| Step                 | Evidence                                                                                                                                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Player A, tile 31    | [`0xeb0bfc1eb368237ed9cb743919bb990532c1e0c52b78b3e76957e9f87180d219`](https://sepolia.arbiscan.io/tx/0xeb0bfc1eb368237ed9cb743919bb990532c1e0c52b78b3e76957e9f87180d219), 110,473 gas. Receipt matched revision 1 and walls `0xd05b827900a`. |
+| Player B, tile 38    | [`0x961e107f0dc2b1a0b2fdc8b7957fba4715d7d286d4e5525e1245de428737a673`](https://sepolia.arbiscan.io/tx/0x961e107f0dc2b1a0b2fdc8b7957fba4715d7d286d4e5525e1245de428737a673), 109,803 gas. Receipt matched revision 2 and walls `0xd45b827900a`. |
+| Tile 8 at revision 0 | `eth_call` reverted with `UnsolvableMutation`.                                                                                                                                                                                                |
 
 ## Verification record
 
@@ -64,11 +99,11 @@ Local private keys are excluded from Git and blocked by the development server. 
 | Screenshots                             | [Desktop](screenshots/desktop.png), [375px mobile](screenshots/mobile.png); both local Anvil                 |
 | Performance benchmark                   | First-play latency and FPS not measured; build chunk-size warning recorded below                             |
 | Sepolia chain                           | 421614                                                                                                       |
-| Deployed contract / source verification | Pending funding and deployment                                                                               |
-| Deployment transaction                  | Pending                                                                                                      |
-| Real UI mutation A, revision 0→1        | Pending                                                                                                      |
-| Real UI mutation B, revision 1→2        | Pending                                                                                                      |
-| Sepolia gas estimates / receipts        | Pending                                                                                                      |
+| Deployed contract / source verification | Official `0xDaFc851910D91D54916349EECB8d320a5a56b988`, block 317783571; Sourcify `exact_match`, chain 421614 |
+| Deployment transaction                  | `0xaf9a8e77b68c1b9d9e1952abab04fdc2584ac1b56bc2c0c3169f128fc4b87d1d`                                         |
+| Real UI mutation A, revision 0→1        | Pending on a fresh acceptance deployment                                                                     |
+| Real UI mutation B, revision 1→2        | Pending on a fresh acceptance deployment                                                                     |
+| Sepolia gas estimates / receipts        | Rehearsal copy only (110,473 and 109,803 gas). Official browser receipts pending                             |
 | Product demo ≤3 minutes                 | [English script ready](demo-script.md); recording pending                                                    |
 | Presentation 2–3 minutes                | [English script ready](presentation.md); recording pending                                                   |
 
@@ -89,14 +124,14 @@ Session history was split into atomic commits before publication. The complete-s
 
 ## Release procedure
 
-1. Fund the selected release wallets via a faucet listed by Arbitrum, connect their browser-wallet or local-keystore signing setup, and verify their balances on chain 421614. The existing `scripts/sepolia.mjs` commands use the generated local wallets until a different signing setup is configured.
-2. Deploy a fresh canonical dungeon and verify its source. Record the public address, deployment block/hash, compiler settings, and explorer verification result.
-3. Configure the browser using that deployment. In profile A, play route `DRRRRURRDDLDLLDDRDRR`, toggle 31, sign, and verify revision 1 / walls `0xd05b827900a`.
-4. In a separate wallet profile B, play `DRRRRURRDDLDLLLDDRRDRR`, toggle 38, sign, and verify revision 2 / walls `0xd45b827900a`.
-5. Record both real hashes, gas used, visible board differences, public history, and one safety rejection. Use a fresh deployment if a CLI rehearsal already consumed the canonical two revisions.
-6. Capture the English product demo and separate presentation. Describe business/retention ideas as hypotheses until observed evidence exists.
+The existing official contract is already revision 3, and the rehearsal copy already consumed fixture revisions 1 and 2. Complete the required two-wallet sequence on a fresh canonical acceptance deployment, then record and configure the resulting release address.
 
-One mutation, a CLI-only rehearsal, or a local Anvil recording does not meet the two-profile Sepolia browser release gate.
+1. Deploy and verify the fresh canonical dungeon, then configure the browser with its address and block. In profile A, play route `DRRRRURRDDLDLLDDRDRR`, toggle 31, sign, and verify revision 1 / walls `0xd05b827900a`.
+2. In a separate wallet profile B, play `DRRRRURRDDLDLLLDDRRDRR`, toggle 38, sign, and verify revision 2 / walls `0xd45b827900a`.
+3. Record both real hashes, gas used, visible board differences, public history, and one safety rejection from that acceptance contract.
+4. Capture the English product demo and separate presentation. Describe business/retention ideas as hypotheses until observed evidence exists.
+
+One mutation, a CLI-only rehearsal (including the copy above), or a local Anvil recording does not meet the two-profile Sepolia browser release gate.
 
 ## Standards
 
@@ -115,7 +150,7 @@ An independent spec reviewer compared the same diff with GitHub issue #1 and the
 
 - **P2, cached success without atomic coordination:** a reload could restore a cached confirmation without receipt verification when Web Locks were unavailable. This contradicted “cached success is not fresh proof.” **Resolved:** synchronization verifies outcomes read-only even without Web Locks; signing remains disabled. A reload regression keeps success withdrawn when receipt reads fail.
 - **P2, receipt identity:** returned transaction and receipt hashes were not explicitly compared with the requested hash, contrary to “verify the attempt’s transaction and DungeonMutated event.” **Resolved:** bind returned hashes to requested hashes before interpreting receipts, with two RPC-response mismatch regressions.
-- **Partial release requirement:** verified Sepolia deployment, two real browser-wallet mutations, measured Sepolia gas, and release videos remain pending, as disclosed above. The required “two distinct wallets in separate browser profiles against the same fresh deployment” remains an external release gate.
+- **Partial release requirement:** the official Sepolia deployment and Sourcify exact match are recorded above. Two real browser-wallet mutations on that contract, official Sepolia gas receipts, and release videos remain pending. The required “two distinct wallets in separate browser profiles against the same fresh deployment” remains an external release gate. The rehearsal copy is rehearsal evidence.
 
 No material unasked scope creep was found. Re-review found the two code findings corrected and no concrete introduced defect.
 
@@ -140,4 +175,4 @@ Typechecking and formatting passed. Five existing browser regressions passed on 
 npm run test:browser -- --grep 'cached success|offline observation|storage reads failing after broadcast|explicit wallet rejection'
 ```
 
-Both generated Sepolia wallets were rechecked and still held 0 test ETH. The public deployment, verification, real browser-wallet mutations, and recording gate remain pending.
+At that review, the throwaway wallets then configured still held 0 test ETH. The public addresses above have since deployed the official contract, and Sourcify verification is recorded. Real browser-wallet mutations on that contract, and the recording gate, remain pending.

@@ -110,6 +110,7 @@ if (command === 'deploy') {
     [{ type: 'uint64' }, { type: 'uint64' }],
     [BigInt(fixture.initialWallsHex), BigInt(fixture.editableMaskHex)],
   );
+  // Blockscout's Arbitrum Sepolia API is blocked by Cloudflare. Sourcify verified the release.
   const result = spawnSync(
     binary('forge'),
     [
@@ -119,9 +120,7 @@ if (command === 'deploy') {
       '--chain',
       '421614',
       '--verifier',
-      'blockscout',
-      '--verifier-url',
-      'https://arbitrum-sepolia.blockscout.com/api/',
+      'sourcify',
       '--constructor-args',
       args,
       '--watch',

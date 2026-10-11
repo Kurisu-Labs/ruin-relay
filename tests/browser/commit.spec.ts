@@ -63,6 +63,17 @@ test('explicit wallet rejection restores the run and tile without a success clai
   await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   await expect(page.locator('.success')).toHaveCount(0);
   expect(wallet.requests).toHaveLength(1);
+  await page.reload();
+  await expect(page.getByText('COMMIT ATTEMPT · REJECTED')).toBeVisible();
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Tile 31:' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Play latest', exact: true })).toBeEnabled();
+  await page.getByRole('link', { name: 'History' }).click();
+  await expect(page.locator('#history')).toBeVisible();
 });
 
 test('pending attempts survive reload and status reads never resubmit', async ({ page }) => {
@@ -80,11 +91,11 @@ test('pending attempts survive reload and status reads never resubmit', async ({
   expect(wallet.requests).toHaveLength(1);
   await rpc('evm_mine');
   await rpc('evm_setAutomine', [true]);
-  await page.getByRole('button', { name: 'Retry status', exact: true }).click();
   await expect(page.locator('.success')).toHaveCount(1);
+  expect(wallet.requests).toHaveLength(1);
 });
 
-test('a lost wallet response without original linkage remains locked after manual hash recovery', async ({
+test('a lost wallet response is confirmed when its mined event matches the attempt', async ({
   page,
 }) => {
   const wallet = await injectWallet(page);
@@ -92,13 +103,12 @@ test('a lost wallet response without original linkage remains locked after manua
   await open(page);
   await walk(page);
   await submit(page);
-  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  await expect(page.getByText('COMMIT ATTEMPT · CONFIRMED')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   await page.reload();
-  await page.getByLabel('Recover with transaction hash').fill(wallet.hash!);
-  await page.getByRole('button', { name: 'Verify hash', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('unrelated or linkage is ambiguous');
-  await expect(page.locator('.success')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeEnabled();
   expect(wallet.requests).toHaveLength(1);
 });
 
