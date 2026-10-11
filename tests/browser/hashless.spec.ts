@@ -98,6 +98,88 @@ test('a legacy hashless journal is confirmed when the account mutated snapshot+1
   await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toHaveCount(0);
 });
 
+async function limitedLogRpc(page: Page, reportedHead: bigint, failFrom?: bigint) {
+  const realHead = await rpc('eth_blockNumber');
+  const spans: bigint[] = [];
+  await page.route('http://127.0.0.1:8545/**', async (route) => {
+    const query = route.request().postDataJSON();
+    if (query.method === 'eth_blockNumber')
+      return route.fulfill({
+        json: { jsonrpc: '2.0', id: query.id, result: '0x' + reportedHead.toString(16) },
+      });
+    if (query.method !== 'eth_getLogs') return route.continue();
+    const filter = query.params[0];
+    const span = BigInt(filter.toBlock) - BigInt(filter.fromBlock) + 1n;
+    spans.push(span);
+    if (failFrom !== undefined && BigInt(filter.fromBlock) >= failFrom) return route.abort();
+    if (span > 2000n)
+      return route.fulfill({
+        json: {
+          jsonrpc: '2.0',
+          id: query.id,
+          error: { code: -32005, message: 'RPC log window limit: 2000 blocks' },
+        },
+      });
+    if (BigInt(filter.fromBlock) > BigInt(realHead))
+      return route.fulfill({ json: { jsonrpc: '2.0', id: query.id, result: [] } });
+    const response = await route.fetch({
+      postData: JSON.stringify({
+        ...query,
+        params: [
+          {
+            ...filter,
+            toBlock: BigInt(filter.toBlock) > BigInt(realHead) ? realHead : filter.toBlock,
+          },
+        ],
+      }),
+    });
+    return route.fulfill({ response });
+  });
+  return spans;
+}
+
+test('hashless recovery uses bounded log windows on an aged deployment', async ({ page }) => {
+  const accounts: Hex[] = await rpc('eth_accounts');
+  await direct(0n, pack(PATH), PATH.length, 31, 0);
+  const spans = await limitedLogRpc(page, 30003n);
+  await injectWallet(page);
+  await seedLegacyHashless(page, accounts[0]);
+  await open(page);
+  await expect.poll(() => spans.length).toBeGreaterThan(0);
+  expect(spans.every((span) => span <= 2000n)).toBe(true);
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+});
+
+test('a failed bounded recovery window cannot prove no mutation occurred', async ({ page }) => {
+  const accounts: Hex[] = await rpc('eth_accounts');
+  await limitedLogRpc(page, 4003n, 2001n);
+  const wallet = await injectWallet(page);
+  await seedLegacyHashless(page, accounts[0]);
+  await open(page);
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Restart', exact: true })).toBeDisabled();
+  await expect(page.locator('.success')).toHaveCount(0);
+  expect(wallet.requests).toHaveLength(0);
+});
+
+test('duplicate canonical recovery logs confirm one own mutation', async ({ page }) => {
+  const accounts: Hex[] = await rpc('eth_accounts');
+  await direct(0n, pack(PATH), PATH.length, 31, 0);
+  await page.route('http://127.0.0.1:8545/**', async (route) => {
+    const query = route.request().postDataJSON();
+    if (query.method !== 'eth_getLogs') return route.continue();
+    const response = await route.fetch();
+    const json = await response.json();
+    if (Array.isArray(json.result)) json.result = [...json.result, ...json.result];
+    await route.fulfill({ response, json });
+  });
+  await injectWallet(page);
+  await seedLegacyHashless(page, accounts[0]);
+  await open(page);
+  await expect(page.locator('.success')).toContainText('Your edit created revision #1.');
+  await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toHaveCount(0);
+});
+
 test('a legacy hashless journal with the same revision unlocks when nothing is in flight', async ({
   page,
 }) => {

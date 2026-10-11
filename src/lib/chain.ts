@@ -201,46 +201,27 @@ function sameMutation(attempt: Attempt, event: Mutation) {
   );
 }
 
-async function logsForRevision(
-  address: Address,
-  revision: bigint,
-  fromBlock: bigint,
-  latest: bigint,
-) {
-  const query = (from: bigint, to: bigint) =>
-    client.getContractEvents({
-      address,
-      abi,
-      eventName: 'DungeonMutated',
-      args: { revision },
-      fromBlock: from,
-      toBlock: to,
-      strict: true,
-    });
-  try {
-    return await query(fromBlock, latest);
-  } catch (error) {
-    // A wide eth_getLogs can fail closed. A short deployment can still be walked.
-    // Anything we cannot finish stays locked: a partial scan is not proof of absence.
-    const span = latest - fromBlock;
-    if (span > 30_000n) throw error;
-    const collected = [];
-    for (let from = fromBlock; from <= latest; from += 2_000n) {
-      const to = from + 1_999n > latest ? latest : from + 1_999n;
-      collected.push(...(await query(from, to)));
-    }
-    return collected;
-  }
+function mutationLogs(address: Address, fromBlock: bigint, toBlock: bigint, revision?: bigint) {
+  return client.getContractEvents({
+    address,
+    abi,
+    eventName: 'DungeonMutated',
+    args: revision === undefined ? undefined : { revision },
+    fromBlock,
+    toBlock,
+    strict: true,
+  });
 }
 
-async function mutationsAt(address: Address, revision: bigint): Promise<Mutation[]> {
-  if (deployment.block === undefined) throw new Error('Deployment block is not configured.');
-  const latest = await client.getBlockNumber();
-  const logs = await logsForRevision(address, revision, deployment.block, latest);
-  const found: Mutation[] = [];
+async function canonicalMutations(
+  address: Address,
+  logs: Awaited<ReturnType<typeof mutationLogs>>,
+): Promise<Mutation[]> {
+  const found = new Map<string, Mutation>();
   const canonical = new Map<bigint, Hash>();
   for (const log of logs) {
     if (
+      log.address.toLowerCase() !== address.toLowerCase() ||
       log.removed ||
       log.blockNumber === null ||
       log.blockHash === null ||
@@ -254,7 +235,7 @@ async function mutationsAt(address: Address, revision: bigint): Promise<Mutation
         (await client.getBlock({ blockNumber: log.blockNumber })).hash,
       );
     if (canonical.get(log.blockNumber) !== log.blockHash) continue;
-    found.push({
+    found.set(`${chain.id}:${log.transactionHash}:${log.logIndex}`, {
       ...log.args,
       hash: log.transactionHash,
       blockNumber: log.blockNumber,
@@ -262,7 +243,23 @@ async function mutationsAt(address: Address, revision: bigint): Promise<Mutation
       logIndex: log.logIndex,
     });
   }
-  return found;
+  return [...found.values()];
+}
+
+async function mutationsAt(address: Address, revision: bigint): Promise<Mutation[]> {
+  if (deployment.block === undefined) throw new Error('Deployment block is not configured.');
+  const latest = await client.getBlockNumber();
+  for (let from = deployment.block; from <= latest; from += 2_000n) {
+    const to = from + 1_999n > latest ? latest : from + 1_999n;
+    const found = await canonicalMutations(
+      address,
+      await mutationLogs(address, from, to, revision),
+    );
+    // This contract emits at most one canonical mutation for a revision.
+    if (found.length) return found;
+  }
+  // Any failed window throws; a partial scan never proves event absence.
+  return [];
 }
 
 async function adoptObservedMutation(
@@ -482,38 +479,12 @@ export async function readHistory(live: Snapshot): Promise<Mutation[]> {
   let to = live.blockNumber;
   while (to >= deployment.block && entries.size < 10) {
     const from: bigint = to - deployment.block > 1999n ? to - 1999n : deployment.block;
-    const logs = await client.getContractEvents({
-      address: live.address,
-      abi,
-      eventName: 'DungeonMutated',
-      fromBlock: from,
-      toBlock: to,
-      strict: true,
-    });
-    const canonical = new Map<bigint, Hash>();
-    for (const log of logs) {
-      if (
-        log.removed ||
-        log.blockNumber === null ||
-        log.blockHash === null ||
-        log.transactionHash === null ||
-        log.logIndex === null
-      )
-        continue;
-      if (!canonical.has(log.blockNumber))
-        canonical.set(
-          log.blockNumber,
-          (await client.getBlock({ blockNumber: log.blockNumber })).hash,
-        );
-      if (canonical.get(log.blockNumber) !== log.blockHash) continue;
-      entries.set(`${live.chainId}:${log.transactionHash}:${log.logIndex}`, {
-        ...log.args,
-        hash: log.transactionHash,
-        blockNumber: log.blockNumber,
-        blockHash: log.blockHash,
-        logIndex: log.logIndex,
-      });
-    }
+    const mutations = await canonicalMutations(
+      live.address,
+      await mutationLogs(live.address, from, to),
+    );
+    for (const mutation of mutations)
+      entries.set(`${live.chainId}:${mutation.hash}:${mutation.logIndex}`, mutation);
     if (from === deployment.block) break;
     to = from - 1n;
   }
