@@ -488,5 +488,17 @@ export async function readHistory(live: Snapshot): Promise<Mutation[]> {
     if (from === deployment.block) break;
     to = from - 1n;
   }
-  return [...entries.values()].sort((a, b) => (a.revision > b.revision ? -1 : 1)).slice(0, 10);
+  const history = [...entries.values()]
+    .sort((a, b) => (a.revision > b.revision ? -1 : 1))
+    .slice(0, 10);
+  const expectedCount = Number(live.revision < 10n ? live.revision : 10n);
+  // A successful RPC response can still be missing logs. The observed dungeon
+  // determines which recent revisions must exist before history is complete.
+  if (
+    history.length !== expectedCount ||
+    history.some((entry, index) => entry.revision !== live.revision - BigInt(index)) ||
+    (history.length > 0 && history[0].wallMask !== live.walls)
+  )
+    throw new Error('History is incomplete or inconsistent with the live dungeon.');
+  return history;
 }
