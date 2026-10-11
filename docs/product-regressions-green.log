@@ -1,0 +1,18 @@
+[WebServer] (node:75364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:75467) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 7 tests using 1 worker
+
+(node:75509) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/draft-coordination.spec.ts:6:3 › adopting another tab draft discards a ready transaction preview after wallet rejection (5.8s)
+  ✓  2 tests/browser/draft-coordination.spec.ts:6:3 › adopting another tab draft discards a estimating transaction preview after wallet rejection (6.4s)
+  ✓  3 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with empty history are unavailable, not empty or complete (3.2s)
+  ✓  4 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-latest history are unavailable, not empty or complete (3.2s)
+  ✓  5 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with missing-earlier history are unavailable, not empty or complete (2.6s)
+  ✓  6 tests/browser/history-integrity.spec.ts:5:3 › successful RPC responses with wrong-mask history are unavailable, not empty or complete (3.1s)
+  ✓  7 tests/browser/history-integrity.spec.ts:42:1 › complete history keeps only the ten newest revisions (2.1s)
+
+  7 passed (28.5s)

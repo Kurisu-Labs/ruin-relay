@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
+  "buildCommand": "VITE_CONTRACT_ADDRESS=0xf1ee7e1D9814E0ac2ddC3dd180a58f9698cc0d79 VITE_DEPLOYMENT_BLOCK=317967651 VITE_LOCAL=false npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/play", "destination": "/index.html" },

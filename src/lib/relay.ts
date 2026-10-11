@@ -211,6 +211,7 @@ export class Relay {
           ? {
               run: restored?.run ?? { snapshot: live, path: '', position: 0 },
               tile: restored?.tile,
+              prepared: undefined,
             }
           : {}),
       });
@@ -273,11 +274,12 @@ export class Relay {
     }
     this.set({ tile, prepared: undefined, error: '' });
   }
-  private eligible() {
+  private eligible(prepared?: Pick<Prepared, 'run' | 'tile'>) {
     const { run, live, tile, online } = this.state;
     return (
       !this.state.recoveryError &&
       run &&
+      (!prepared || (prepared.run === run && prepared.tile === tile)) &&
       run.position === EXIT &&
       live &&
       online &&
@@ -318,6 +320,9 @@ export class Relay {
         account,
       });
       const fees = await commitFeeCap();
+      // Another tab may have replaced the draft while the wallet/RPC quote
+      // was pending. Its late result must not restore the old preview.
+      if (!this.eligible({ run, tile }) || this.state.attempts.some(unresolved)) return;
       this.set({
         prepared: { run, tile, account, gas, fee: gas * fees.maxFeePerGas, ...fees },
       });
@@ -329,7 +334,7 @@ export class Relay {
   }
   async send() {
     const prepared = this.state.prepared;
-    if (this.locked || !prepared || !this.eligible()) return;
+    if (this.locked || !prepared || !this.eligible(prepared)) return;
     this.set({ busy: true, error: '' });
     let attempt: Attempt | undefined;
     let issued = false;
@@ -343,6 +348,10 @@ export class Relay {
         throw new Error('Account or network changed before signing');
       const live = await readDungeon();
       this.set({ live });
+      if (this.state.run !== prepared.run || this.state.tile !== prepared.tile) {
+        this.set({ prepared: undefined });
+        return;
+      }
       if (!this.eligible()) throw new Error('Stale run');
       const { run, tile } = prepared;
       await client.simulateContract({
@@ -388,6 +397,8 @@ export class Relay {
         !isDeploymentChain(await connected.getChainId())
       )
         throw new Error('Account or network changed before signing');
+      if (this.state.run !== run || this.state.tile !== tile)
+        throw new Error('Run or edit changed before signing. Review your edit again.');
       issued = true;
       const hash = await connected.sendTransaction({
         account,
