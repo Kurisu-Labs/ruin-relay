@@ -2,13 +2,40 @@
 
 **Escape the dungeon. Change one tile. Challenge everyone after you.**
 
-A desktop browser puzzle with one shared 7×7 dungeon. Play locally without a wallet; a valid escape lets you toggle one allowed tile through a single Solidity transaction. The contract verifies the path against the old dungeon and checks that the new dungeon still has an escape route.
+A browser puzzle with one shared 7×7 dungeon. Play locally without a wallet using keyboard, mouse, or the touch D-pad; a valid escape lets you toggle one allowed tile through a single Solidity transaction. The contract verifies the path against the old dungeon and checks that the new dungeon still has an escape route.
 
-The application and local test harness are implemented. The fresh Arbitrum Sepolia acceptance contract is deployed at `0xf1ee7e1D9814E0ac2ddC3dd180a58f9698cc0d79` and Sourcify-verified (`exact_match`, chain 421614). The canonical two-wallet sequence is verified through revision 2, and the operator confirmed separate profiles. The operator deferred hackathon recordings on 11 October 2026 to prioritize product development and correctness. See [product validation](docs/product-validation.md) for the current technical review; hackathon materials remain tracked separately in [#13](https://github.com/Kurisu-Labs/ruin-relay/issues/13). The prior live contract is already revision 3; its receipts and the separate CLI rehearsal remain historical evidence. See the [completion checklist](docs/release-evidence.md#issue-1-completion-checklist) and [deployment evidence](docs/release-evidence.md#fresh-acceptance-deployment--11-october-2026).
+The application and local test harness are implemented. The upstream Arbitrum Sepolia acceptance contract is deployed at `0xf1ee7e1D9814E0ac2ddC3dd180a58f9698cc0d79` and Sourcify-verified (`exact_match`, chain 421614). The canonical two-wallet sequence is verified through revision 2, and the operator confirmed separate profiles. The operator deferred hackathon recordings on 11 October 2026 to prioritize product development and correctness. See [product validation](docs/product-validation.md) for the current technical review; hackathon materials remain tracked separately in [#13](https://github.com/Kurisu-Labs/ruin-relay/issues/13). The prior live contract is already revision 3; its receipts and the separate CLI rehearsal remain historical evidence. See the [completion checklist](docs/release-evidence.md#issue-1-completion-checklist) and [deployment evidence](docs/release-evidence.md#fresh-acceptance-deployment--11-october-2026).
+
+The game in this branch uses **Three.js only**. Play opens the first-person dungeon at `/play`; `/play/3d` remains a compatible link. The committed 2D baseline is preserved in [`feat/phaser4-dungeon`](https://github.com/Kurisu-Labs/ruin-relay/tree/feat/phaser4-dungeon). The latest uncommitted 2D snapshot is also backed up locally; see [renderer migration and recovery](gameplan/RENDERER_MIGRATION.md).
+
+The public-chain evidence above belongs to the upstream acceptance run. Validation of this 3D presentation is tracked separately in the migration record; it does not claim that the 3D UI performed those historical transactions.
 
 ## Run locally
 
-Use Node.js 22.12+ (tested with 26.11.1) and npm. The lockfile pins React, Phaser 3, viem/wagmi, Vite, Foundry 1.7.1, and the test tools. Foundry downloads Solidity 0.8.24 on first use.
+Use Node.js 22.12+ and npm (checked with Node 22.23.3). The lockfile pins React, Three.js 0.186.1, viem/wagmi, Vite, Foundry 1.7.1, and the test tools. Foundry downloads Solidity 0.8.24 on first use.
+
+For a quick visual preview without a wallet or local blockchain:
+
+```sh
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173/ for the landing page, then choose **Play without a wallet**. The `/play` route opens the first-person 3D dungeon and fills the browser viewport by default. Play, Home, Resume, and browser Back/Forward switch views within the same document, retaining the run, selected edit, and any transaction in progress. A full reload still follows the existing journal recovery rules; an ordinary unfinished run is held in memory. The optional **Fullscreen** button hides browser controls when supported. History and instructions open in an in-game dialog; Escape or **Back to game** closes it.
+
+The landing page uses a lightweight CSS illustration. Hovering, focusing, or touching a Play link warms the shared engine import; no canvas or GPU resources are created until entering the game. Speculative loading is skipped when the browser reports data-saving or a slow connection.
+
+Three.js is the only game renderer. The former `/play/3d` URL redirects in place to `/play`, preserving query and fragment. Only one canvas exists at a time. WebGL 2 is required; loading or graphics failures offer Retry while Home remains available. The retired 2D implementation can be recovered from its Git history or the verified local snapshot; see [migration and recovery](gameplan/RENDERER_MIGRATION.md).
+
+In **3D**, W/↑ steps forward, S/↓ steps backward, A/← and D/→ sidestep left/right without turning, and Q/E turn 90° left/right. The six matching buttons support mouse and touch. Turning costs no steps; the starting direction is south. Restart or re-entering the 3D view resets the heading. Movement still uses the canonical four-direction grid, with no automatic walking or pointer lock. After EXIT, the ceiling opens and an overhead map appears alongside the existing one-tile editor. Reduced motion removes camera interpolation and torch flicker. Original procedural artwork includes recessed stone reliefs, vaulted ribs, weathered banners, roots, ivy, detailed sconces and a stone EXIT arch with inset glyphs. Editable walls keep ordinary stone courses. The experience adds no enemies, combat, loot or inventory. See [3D scope, provenance and validation](gameplan/THREE_DUNGEON.md).
+
+**Home** in the bottom game dock returns to the landing page. The dock also holds direction buttons, Restart, History, Fullscreen, Menu, Play latest, Refresh, and Settings. Settings contains sound, reduced motion and tile numbers. All six movement and turn buttons have matching square targets. The canvas has its own space above the dock so controls cannot cover the dungeon or editable tiles.
+
+Without active deployment metadata this uses the practice seed; no transaction can be submitted. Each click or tap performs one step or turn. Keyboard controls apply while the dungeon has focus. The full map and edit panel open after reaching EXIT. Sound is off by default; reduced motion follows the operating system unless overridden. Tile numbers are optional, and the DOM tile editor remains available after escape.
+
+After EXIT, select a highlighted **floor** to preview a wall, or a highlighted **wall** to preview floor. Dim tiles are fixed. Exactly one tile can change and an escape route must remain. The preview is not saved until a transaction is confirmed. **Commit one change** connects the wallet and prepares a review; **Sign and submit edit** is a separate action. The explanation below Commit identifies why it is disabled. Practice mode supports previews only; connecting a wallet does not enable saving on a practice board.
+
+For the full local blockchain rehearsal and browser tests:
 
 ```sh
 npm ci
@@ -42,7 +69,9 @@ Wallet A’s real [Sepolia mutation](https://sepolia.arbiscan.io/tx/0xd2657acdce
 
 ## Sepolia setup
 
-The CLI commands below use generated local wallets. The operator-provided Firefox acceptance wallets and their verified funding are recorded in [release evidence](docs/release-evidence.md#prepared-acceptance-wallets); those signing requests require operator interaction.
+To connect the frontend to the existing official deployment, copy `.env.example` to `.env.local` and start or restart `npm run dev`. The header should show **Arbitrum Sepolia**. After escaping, select a valid editable tile and choose **Commit one change** to connect the wallet and review the transaction. The wallet needs Arbitrum Sepolia test ETH for gas; **Sign and submit edit** sends the transaction after review.
+
+For an operator deploying a new contract, the CLI commands below use generated local wallets. The operator-provided Firefox acceptance wallets and their verified funding are recorded in [release evidence](docs/release-evidence.md#prepared-acceptance-wallets); those signing requests require operator interaction.
 
 ```sh
 node scripts/setup-wallets.mjs
@@ -79,7 +108,7 @@ For a CLI fixture rehearsal on a fresh deployment, `node scripts/sepolia.mjs fix
 
 ## Recovery and integrity
 
-React owns the run, edit draft, and fixed commit attempt; Phaser renders and captures focused keyboard input. Polling updates the live dungeon without replacing a run snapshot. The client simulates and estimates gas before showing a separate Sign and submit action, then repeats state/account/network checks before requesting the signature.
+React/Relay owns the run, edit draft, and fixed commit attempt; the Three.js renderer presents that snapshot; its React host captures focused keyboard intent synchronously. Animation never delays accepted domain moves. Polling updates the live dungeon without replacing a run snapshot. The client simulates and estimates gas before showing a separate Sign and submit action, then repeats state/account/network checks before requesting the signature.
 
 An origin/profile/deployment-scoped Web Lock protects the durable local journal across all accounts and tabs. The journal is saved before signing. A known hash stays tracked in memory if a later storage write fails. Pending, unknown, and syncing attempts lock edits, Restart, Play latest, and new commits. History, status reads, and Recover with transaction hash stay available. Retry status and manual hash recovery perform reads only. Recovery of a supplied hash requires the original returned hash or a previously observed original sender and nonce. A requested nonce is recorded for diagnostics, but is not proof of the broadcast nonce: wallets may change it. Matching payload alone does not link a different hash. Before the signing request, the journal also records the account's pending and latest nonce. On load and on Retry status, a hashless unresolved attempt can end from chain evidence alone. A failed nonce or log read leaves it locked. Retain wallet/explorer evidence; the app does not guess from a timeout or a lost response.
 
@@ -95,9 +124,9 @@ The contract has no owner, proxy, admin mutation, external call, asset custody, 
 
 ## Limitations and credits
 
-Testnet only. No tokens, NFTs, or monetary rewards. Public solutions can be reused; scripts can solve the puzzle. Wallet addresses do not establish unique humans or manual play. UI confirmation does not mean Ethereum L1 finality. Mobile layout supports spectators; touch controls are deferred. No authoritative game backend or PII analytics is used. Business and retention hypotheses remain unvalidated.
+Testnet only. No tokens, NFTs, or monetary rewards. Public solutions can be reused; scripts can solve the puzzle. Wallet addresses do not establish unique humans or manual play. UI confirmation does not mean Ethereum L1 finality. Responsive mouse/touch controls are implemented; build, contract and unit checks passed; integrated 3D browser validation remains pending (see [validation evidence](gameplan/THREEJS_RELEASE_CHECK.md)). Real-device mobile FPS has not been measured. Browser fullscreen depends on browser support; the viewport layout works without it. No authoritative game backend or PII analytics is used. Business and retention hypotheses remain unvalidated.
 
-MIT-licensed project code; geometric dungeon artwork is original code. React, Phaser, viem, wagmi, Vite, Vitest, Playwright, and Foundry retain their respective upstream licenses. Typography uses Google Fonts DM Sans and Space Grotesk (SIL Open Font License), with system fallbacks.
+MIT-licensed project code and original procedural dungeon artwork. The stonework, banners, sconces, roots, textures and EXIT arch are generated in [`src/game3d/world.ts`](src/game3d/world.ts); [asset provenance](src/game3d/README.md) describes their construction. No Keep Out models, textures, audio or code are included. Three.js retains its [MIT license notice](public/assets/game3d/THREE-LICENSE.txt). React, viem, wagmi, Vite, Vitest, Playwright and Foundry retain their upstream licenses. Typography uses Google Fonts DM Sans and Space Grotesk (SIL Open Font License), with system fallbacks. Earlier Phaser plans and validation remain in `gameplan/` as history; their assets are no longer shipped.
 
 Prior work: the PRD, ADRs, glossary, interface, and fixtures existed before this implementation; the application, contract, and executable harness were added for issue [#1](https://github.com/Kurisu-Labs/ruin-relay/issues/1). Record the actual development window and completed release evidence before submission. Product demo target: ≤3 minutes; separate presentation target: 2–3 minutes. Check current competition rules before submitting.
 

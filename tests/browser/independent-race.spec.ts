@@ -6,7 +6,7 @@ test('independent profiles racing after simulation produce one mutation and a st
   page,
   browser,
 }) => {
-  const otherContext = await browser.newContext();
+  const otherContext = await browser.newContext({ reducedMotion: 'reduce' });
   try {
     const other = await otherContext.newPage();
     const winner = await injectWallet(page, 0);

@@ -1,0 +1,153 @@
+{
+  "command": "npm run test:browser -- tests/browser/game.spec.ts tests/browser/isometric.spec.ts tests/browser/commit.spec.ts",
+  "engine": "Phaser 4.2.1",
+  "environment": "Local Anvil; Chromium via Playwright; executed from user terminal",
+  "stats": {
+    "startTime": "2026-10-10T17:42:29.667Z",
+    "duration": 80797.881,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "errors": [],
+  "tests": [
+    {
+      "file": "commit.spec.ts",
+      "title": "commit.spec.ts / two wallet profiles contribute the exact canonical revisions and public history",
+      "project": "",
+      "status": "expected",
+      "durationMs": 13648,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "commit.spec.ts",
+      "title": "commit.spec.ts / a stale run stays frozen, Restart repeats it, and Play latest adopts the live dungeon",
+      "project": "",
+      "status": "expected",
+      "durationMs": 4004,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "commit.spec.ts",
+      "title": "commit.spec.ts / explicit wallet rejection restores the run and tile without a success claim",
+      "project": "",
+      "status": "expected",
+      "durationMs": 3235,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "commit.spec.ts",
+      "title": "commit.spec.ts / pending attempts survive reload and status reads never resubmit",
+      "project": "",
+      "status": "expected",
+      "durationMs": 5369,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "commit.spec.ts",
+      "title": "commit.spec.ts / a lost wallet response without original linkage remains locked after manual hash recovery",
+      "project": "",
+      "status": "expected",
+      "durationMs": 5058,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "commit.spec.ts",
+      "title": "commit.spec.ts / atomic same-profile claim allows one signing request across two accounts",
+      "project": "",
+      "status": "expected",
+      "durationMs": 14346,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "game.spec.ts",
+      "title": "game.spec.ts / rapid keys are applied once even when animation frames pause",
+      "project": "",
+      "status": "expected",
+      "durationMs": 2404,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "game.spec.ts",
+      "title": "game.spec.ts / wallet-free escape opens a one-tile editor with a bounded solvability preview",
+      "project": "",
+      "status": "expected",
+      "durationMs": 3350,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / canvas floor picking previews the same edit as the DOM without selecting on hover",
+      "project": "",
+      "status": "expected",
+      "durationMs": 4007,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / restart cancels visual motion and view preferences never reset a run",
+      "project": "",
+      "status": "expected",
+      "durationMs": 4088,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / resize preserves the frozen run and camera picking on a narrow viewport",
+      "project": "",
+      "status": "expected",
+      "durationMs": 3247,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / failed artwork can be retried without losing domain state or duplicating the canvas",
+      "project": "",
+      "status": "expected",
+      "durationMs": 2838,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / live updates keep the existing run and its editable preview frozen",
+      "project": "",
+      "status": "expected",
+      "durationMs": 3267,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / distinct inputs and restart in one task are applied once without waiting for a render",
+      "project": "",
+      "status": "expected",
+      "durationMs": 2260,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / ten graphics retries preserve the run, one canvas and one keyboard listener",
+      "project": "",
+      "status": "expected",
+      "durationMs": 5326,
+      "attempts": ["passed"]
+    },
+    {
+      "file": "isometric.spec.ts",
+      "title": "isometric.spec.ts / unavailable WebGL leaves DOM controls readable and retry builds only the view",
+      "project": "",
+      "status": "expected",
+      "durationMs": 1983,
+      "attempts": ["passed"]
+    }
+  ],
+  "earlierFullRegression": {
+    "startTime": "2026-10-10T17:30:52.274Z",
+    "durationMs": 234128.215,
+    "expected": 51,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "note": "Observed before the final wall-cap, batch input and lifecycle changes; not a full-suite run of the final implementation."
+  }
+}

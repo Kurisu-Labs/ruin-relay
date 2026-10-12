@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { createPublicClient, createWalletClient, http, type Hex } from 'viem';
 import { arbitrumSepolia } from 'viem/chains';
 import { abi } from '../../src/config/abi';
+import { tilePosition, WORLD_WIDTH } from '../../src/game3d/spatial';
 
 export const test = base.extend<{ resetChain: void }>({
   resetChain: [
@@ -157,15 +158,60 @@ export async function open(page: Page) {
   await page.goto('/play');
   await expect(page.getByRole('application')).toHaveAttribute('aria-busy', 'false');
 }
-export async function walk(page: Page, path = 'DRRRRURRDDLDLLDDRDRR') {
+export const movementControls = [
+  'Step forward',
+  'Step backward',
+  'Turn left',
+  'Turn right',
+  'Sidestep left',
+  'Sidestep right',
+];
+
+/** Translate fixture compass directions into the visible camera-relative controls. */
+export async function walk(
+  page: Page,
+  path = 'DRRRRURRDDLDLLDDRDRR',
+  input: 'keyboard' | 'mouse' | 'touch' = 'keyboard',
+) {
   await page.bringToFront();
-  await page.getByRole('application').focus();
+  const board = page.getByRole('application');
+  const bearing = (await board.getAttribute('aria-label'))?.match(
+    /Facing (North|East|South|West)\./,
+  )?.[1];
+  const facing = ['North', 'East', 'South', 'West'].indexOf(bearing ?? '');
+  if (facing < 0) throw new Error('The dungeon bearing is unavailable');
+  if (input === 'keyboard') await board.focus();
   let steps = Number((await page.locator('.steps').innerText()).match(/Steps (\d+)/)![1]);
+  const keys = ['w', 'd', 's', 'a'];
+  const labels = ['Step forward', 'Sidestep right', 'Step backward', 'Sidestep left'];
   for (const direction of path) {
-    const key = { U: 'ArrowUp', R: 'ArrowRight', D: 'ArrowDown', L: 'ArrowLeft' }[direction]!;
-    await page.keyboard.press(key);
+    const target = 'URDL'.indexOf(direction);
+    if (target < 0) throw new Error(`Invalid fixture direction: ${direction}`);
+    const relative = (target - facing + 4) % 4;
+    if (input === 'keyboard') await page.keyboard.press(keys[relative]);
+    else {
+      const button = page.getByRole('button', { name: labels[relative], exact: true });
+      if (input === 'touch') await button.tap();
+      else await button.click();
+    }
     await expect(page.locator('.steps')).toHaveText(`Steps ${++steps} / 96`);
   }
+}
+
+/** The escaped editor uses an orthographic map over the same 3D world. */
+export async function mapTilePoint(page: Page, tile: number) {
+  await expect(page.getByRole('application')).toHaveAttribute('data-view', 'map');
+  const bounds = await page.locator('.board canvas').boundingBox();
+  if (!bounds) throw new Error('The dungeon map canvas is missing');
+  const position = tilePosition(tile);
+  const aspect = bounds.width / bounds.height;
+  const span = WORLD_WIDTH * 0.54;
+  const halfWidth = span * Math.max(1, aspect);
+  const halfHeight = span * Math.max(1, 1 / aspect);
+  return {
+    x: bounds.x + (bounds.width * (position.x / halfWidth + 1)) / 2,
+    y: bounds.y + (bounds.height * (position.z / halfHeight + 1)) / 2,
+  };
 }
 export async function prepare(page: Page, tile = 31) {
   await page.getByRole('button', { name: `Tile ${tile}:` }).click();

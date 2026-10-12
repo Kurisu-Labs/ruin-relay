@@ -25,10 +25,14 @@ test('history failure leaves current-state play usable and duplicate logs produc
   });
   await open(page);
   await walk(page, 'D');
-  await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
   await expect(page.getByText('Steps 1 / 96')).toBeVisible();
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.getByText('History unavailable.', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Back to game', exact: true }).click();
   unavailable = false;
   await page.getByRole('button', { name: 'Refresh status', exact: true }).click();
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.locator('#history')).toBeVisible();
   await expect(page.locator('.history-list article')).toHaveCount(1);
 });
 
@@ -115,7 +119,7 @@ test('cached success stays unverified when atomic coordination disappears', asyn
       : route.continue(),
   );
   await page.reload();
-  await expect(page.locator('.revision')).toHaveText('Live revision 1');
+  await expect(page.locator('.run-revision')).toContainText('Live revision 1');
   await expect(page.getByText('COMMIT ATTEMPT · UNKNOWN')).toBeVisible();
   await expect(page.locator('.success')).toHaveCount(0);
 });

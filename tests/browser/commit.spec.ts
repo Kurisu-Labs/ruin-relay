@@ -13,7 +13,7 @@ test('two wallet profiles contribute the exact canonical revisions and public hi
   );
   expect(walletA.requests).toHaveLength(1);
   expect(walletA.requests[0].params[0].value).toBe('0x0');
-  const contextB = await browser.newContext();
+  const contextB = await browser.newContext({ reducedMotion: 'reduce' });
   const pageB = await contextB.newPage();
   const walletB = await injectWallet(pageB, 1);
   await pageB.goto('http://127.0.0.1:4173/play');
@@ -24,6 +24,8 @@ test('two wallet profiles contribute the exact canonical revisions and public hi
     'Your edit created revision #2. The dungeon is now at revision #2.',
   );
   expect(walletB.requests).toHaveLength(1);
+  await pageB.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(pageB.locator('#history')).toBeVisible();
   await expect(pageB.locator('.history-list article')).toHaveCount(2);
   await contextB.close();
 });

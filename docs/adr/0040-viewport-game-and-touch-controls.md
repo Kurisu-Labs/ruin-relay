@@ -1,0 +1,15 @@
+---
+status: accepted
+---
+
+# ADR-040 — Landing dan Game Satu Aplikasi, Kontrol Sentuh
+
+Permintaan pengguna pada 11 Oktober 2026 menerima pemisahan beranda `/` dan game `/play` dalam satu aplikasi agar game memenuhi viewport dan perpindahan tidak memuat ulang halaman. Keputusan ini **menggantikan penundaan D-pad pada ADR-027** dan **memperinci ukuran kamera ADR-039 untuk viewport yang berubah**. Browser Fullscreen API menjadi tombol opsional yang memerlukan klik; layout game sendiri sudah memenuhi viewport tanpa izin fullscreen.
+
+Relay tetap memiliki Run, draft, wallet preparation dan CommitAttempt sepanjang perpindahan lewat History API. Beranda memakai ilustrasi CSS; intent pada link Play memanaskan import engine yang sama dengan Board, dengan pengecualian data saver/koneksi lambat. Hanya `/play` membuat Phaser/canvas dan memuat atlas. Kembali ke beranda menghancurkan view sesuai ADR-037, lalu Resume membangun ulang dari frame Relay terkini. Ini menghindari dua engine dan konsumsi GPU pada beranda; masuk ulang dapat tetap menampilkan loading atlas. Navigasi ini tidak menambahkan persistensi Run lintas reload. Recovery journal ADR-029–032 tetap berlaku.
+
+Keempat tombol arah native mengirim U/R/D/L melalui jalur movement yang sama dengan keyboard. Satu aktivasi = satu intent; tidak ada auto-walk dari menahan tombol. Domain tetap menolak collision, movement sesudah EXIT/96 langkah dan movement saat attempt terkunci. Feedback berikutnya pada tanggal yang sama menerima satu dock di bagian bawah **di dalam bingkai game**, berisi Home eksplisit, tombol arah, Restart, History, fullscreen, Menu, Play latest, Refresh dan Settings. Canvas memakai stage di atas dock agar kontrol tidak menutup tile. Ikon arah memakai satu geometri SVG yang diputar, dengan empat tombol persegi berukuran sama pada tiap breakpoint (48 px, atau 44 px untuk layar kecil/landscape pendek). Teks teknis kamera dihapus. Pada EXIT, kamera overview dan panel edit muncul; di layar sempit panel dapat digulir sendiri dan D-pad yang sudah nonaktif disembunyikan agar overview mendapat ruang. Restart mengembalikan D-pad. History/petunjuk berada dalam dialog modal yang membuat area game inert dan mengembalikan fokus ke pemicu saat ditutup.
+
+Zoom awal viewport memakai `max(0.9 * min(width/(96*4), height/(96*3.4)), width/(96*6), height/(96*5))`, dibatasi oleh `min(width/(96*1.5), height/(96*2.2))` agar seluruh karakter tetap terlihat pada rasio ekstrem. Feedback berikutnya meminta kamera dijauhkan **10% lagi**: seluruh hasil zoom follow tersebut dikalikan `0.9`. Faktor referensi kini `0.81` terhadap baseline awal ADR-039; target cakupan normal menjadi sekitar 6.67 kolom/5.56 baris. Keselamatan visual karakter mengalahkan target cakupan pada rasio ekstrem. Zoom overview setelah escape tidak diubah. Aturan domain, path, collision, chain, wallet dan konfirmasi tidak berubah.
+
+Penerimaan arsitektur tidak menyatakan QA mobile/browser selesai. Bukti dan batas eksekusi: [viewport update](../../gameplan/VIEWPORT_UPDATE.md).
