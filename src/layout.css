@@ -185,7 +185,13 @@
   border: 0;
 }
 .play-header .brand {
-  font-size: 12px;
+  gap: 6px;
+  font-size: 15px;
+  letter-spacing: -0.35px;
+}
+.play-header .brand-mark {
+  width: 24px;
+  height: 24px;
 }
 .play-header .network {
   font-size: 10px;
@@ -396,8 +402,11 @@
     gap: 8px;
   }
   .play-header .brand {
-    letter-spacing: 1px;
-    font-size: 11px;
+    font-size: 14px;
+  }
+  .play-header .brand-mark {
+    width: 22px;
+    height: 22px;
   }
   .play-header .network {
     font-size: 9px;
