@@ -11,6 +11,7 @@ import { warmDungeon } from './game3d/preload';
 import { GameDialog } from './ui/GameDialog';
 import { FullscreenButton } from './ui/FullscreenButton';
 import { GameIcon } from './ui/GameIcon';
+import { Brand } from './ui/Brand';
 const relay = new Relay();
 const short = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
 function TxLink({ hash }: { hash: string }) {
@@ -478,9 +479,7 @@ export default function App({ initialPath = '/' }: { initialPath?: string } = {}
     return (
       <div className={`play-screen ${editing ? 'is-editing' : ''}`} ref={screen}>
         <header className="play-header">
-          <span className="brand">
-            ◈ <span>RUIN RELAY</span>
-          </span>
+          <Brand />
           <span className="network">● {network}</span>
         </header>
         <div className="run-hud" aria-label="Run status">
@@ -552,8 +551,8 @@ export default function App({ initialPath = '/' }: { initialPath?: string } = {}
   return (
     <div className="landing-page">
       <header>
-        <a className="brand" href="/" onClick={follow}>
-          ◈ RUIN RELAY
+        <a className="brand-link" href="/" onClick={follow} aria-label="Ruin Relay home">
+          <Brand />
         </a>
         <nav aria-label="Main">
           <a
@@ -637,7 +636,7 @@ export default function App({ initialPath = '/' }: { initialPath?: string } = {}
         {history}
       </main>
       <footer>
-        <span>◈ RUIN RELAY</span>
+        <Brand />
         <span>Escape the dungeon. Change one tile. Challenge everyone after you.</span>
       </footer>
     </div>
